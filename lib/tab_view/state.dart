@@ -8,4 +8,6 @@ class TabViewState {
   PageController pageController = PageController(initialPage: 0);
 
   int currentIndex = 0;
+
+  late BuildContext context;
 }
