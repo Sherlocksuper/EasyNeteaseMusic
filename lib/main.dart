@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const ShowPage(),
+      home: ShowPage(),
       builder: EasyLoading.init(),
       theme: themeData,
       darkTheme: darkThemeData,

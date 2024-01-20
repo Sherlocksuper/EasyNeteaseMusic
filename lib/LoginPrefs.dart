@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPrefs {
+  //user 0 , cookie null , role null
   static late SharedPreferences prefs;
   static late String cookie;
   static late int userId;
-  static late String role;  // user  visitor
+  static late String role; // user  visitor
+  static late int createTime;
 
   static Future<void> init() async {
     prefs = await SharedPreferences.getInstance();
@@ -27,6 +29,14 @@ class LoginPrefs {
     return prefs.getInt("userId") ?? 0;
   }
 
+  static int getCreateTime() {
+    return prefs.getInt("createTime") ?? 0;
+  }
+
+  static Future<bool> setCreateTime(int createTime) async {
+    return await prefs.setInt("createTime", createTime);
+  }
+
   static Future<bool> setRole(String role) async {
     return await prefs.setString("role", role);
   }
@@ -37,5 +47,18 @@ class LoginPrefs {
 
   static AssetImage getAssetImages(String path) {
     return AssetImage("images/$path");
+  }
+
+  //传入一个map，将map中的数据存入本地
+  static Future<void> setMap(Map<String, dynamic> map) async {
+    setCookie(map["cookie"]);
+    setUserId(map["userId"]);
+    setRole(map["role"]);
+    setCreateTime(map["createTime"]);
+  }
+
+  //清空本地数据
+  static Future<void> clear() async {
+    await prefs.clear();
   }
 }

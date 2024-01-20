@@ -1,7 +1,8 @@
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/tab_view/logic.dart';
+import 'package:wyyapp/search/view.dart';
 import 'logic.dart';
 
 class CommendPage extends StatelessWidget {
@@ -17,8 +18,11 @@ class CommendPage extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 40,
         leading: GestureDetector(
-          onTap: () {
+          onTap: () async {
             Scaffold.of(context).openDrawer();
+            // await logic.getCommandPlayList();
+            // await logic.toRefresh();
+            // await logic.init();
           },
           child: const Icon(
             Icons.menu,
@@ -46,6 +50,9 @@ class CommendPage extends StatelessWidget {
               color: Colors.grey,
             ),
           ),
+          onTap: () {
+            Get.to(() => SearchPage());
+          },
           elevation: MaterialStateProperty.all(0),
           backgroundColor: MaterialStateProperty.all(const Color(0xffe9ecf1)),
           constraints: const BoxConstraints(
@@ -67,8 +74,21 @@ class CommendPage extends StatelessWidget {
       body: Container(
         color: Colors.white,
         padding: const EdgeInsets.only(top: 20),
-        child: const SingleChildScrollView(
-          child: CommandContent(),
+        child: CustomMaterialIndicator(
+          child: const SingleChildScrollView(
+            physics:BouncingScrollPhysics(),
+            child: CommandContent(),
+          ),
+          onRefresh: () async {
+            await logic.toRefresh();
+          },
+          indicatorBuilder: (context, controller) {
+            return const Icon(
+              Icons.ac_unit,
+              color: Colors.red,
+              size: 30,
+            );
+          },
         ),
       ),
     );
@@ -106,69 +126,104 @@ class CommandContent extends StatelessWidget {
             title: "推荐歌单",
             onTap: () {},
           ),
-          SizedBox(
-            height: 170,
-            width: Get.width,
-            child: ListView.separated(
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    width: 120,
-                    child: PlaylistsCard(
-                      title: "歌歌单标题歌单标题歌单标题歌单标题歌单标题单标题a",
-                      url: "images/test.png",
-                      onTap: () {},
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return const Gap(10);
-                },
-                itemCount: 10),
+          GetBuilder<CommendLogic>(
+            builder: (controller) {
+              return SizedBox(
+                height: 170,
+                width: Get.width,
+                child: ListView.separated(
+                  primary: true,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return PlaylistsCard(
+                      playItem: Get.find<CommendLogic>().state.commandPlayList[index],
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return const Gap(10);
+                  },
+                  itemCount: Get.find<CommendLogic>().state.commandPlayList.length,
+                ),
+              );
+            },
           ),
         ),
+
+        //热门榜单
         buildShowShield(
           SubTitle(
-            title: "每日推荐",
+            title: "热门榜单",
             onTap: () {},
           ),
           SizedBox(
             height: 180,
             width: Get.width,
-            child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                shrinkWrap: true,
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                itemBuilder: (context, item) {
-                  return DayCommandCard(
-                    title: "歌歌单标题歌单标题歌单标题歌单标题歌单标题单标题a",
-                    url: "images/test.png",
-                    onTap: () {},
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return const Gap(10);
-                },
-                itemCount: 10),
-          ),
-        ),
-        buildShowShield(
-          SubTitle(
-            title: "推荐歌曲",
-            onTap: () {},
-          ),
-          Container(
-            padding: const EdgeInsets.only(
-              left: 10,
+            child: GetBuilder<CommendLogic>(
+              builder: (controller) {
+                return PageView.builder(
+                  controller: controller.state.pageController,
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return PageItem();
+                  },
+                  itemCount: 3,
+                );
+              },
             ),
+          ),
+        ),
+
+        //排行榜
+        buildShowShield(
+          SubTitle(
+            title: "排行榜",
+            onTap: () {},
+          ),
+          SizedBox(
             height: 180,
             width: Get.width,
-            child: PageView.builder(
-              itemCount: 3,
-              controller: Get.find<CommendLogic>().state.pageController,
-              itemBuilder: (context, index) {
-                return const PageItem();
+            child: GetBuilder<CommendLogic>(
+              builder: (controller) {
+                //从topList中随机选取六个组成新的list
+                return ListView.separated(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  physics: const RangeMaintainingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return TopCard(topItem: controller.state.selectTopList[index]);
+                  },
+                  separatorBuilder: (context, index) {
+                    return const Gap(10);
+                  },
+                  itemCount: controller.state.selectTopList.length,
+                );
+              },
+            ),
+          ),
+        ),
+        //热门榜单
+        buildShowShield(
+          SubTitle(
+            title: "新人都在听",
+            onTap: () {},
+          ),
+          SizedBox(
+            height: 180,
+            width: Get.width,
+            child: GetBuilder<CommendLogic>(
+              builder: (controller) {
+                return PageView.builder(
+                  controller: controller.state.pageController,
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    return PageItem();
+                  },
+                  itemCount: 3,
+                );
               },
             ),
           ),
@@ -196,7 +251,7 @@ class PageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Transform.translate(
-      offset: Offset(Get.width * (-0.05), 0),
+      offset: Offset(Get.width * (-0.05) / 2, 0),
       child: SizedBox(
         width: Get.width,
         child: ListView.separated(
@@ -214,62 +269,110 @@ class PageItem extends StatelessWidget {
   }
 }
 
+//这是歌单的卡片
 class PlaylistsCard extends StatelessWidget {
-  final String title;
-  final Function onTap;
-  final String url;
+  final Map playItem;
 
-  const PlaylistsCard({super.key, required this.title, required this.onTap, required this.url});
+  const PlaylistsCard({super.key, required this.playItem});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        onTap();
-      },
-      child: Column(
-        children: [
-          Stack(
-            fit: StackFit.passthrough,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Image.asset(
-                  fit: BoxFit.cover,
-                  url,
-                  width: 120,
-                  height: 120,
+      onTap: () {},
+      child: SizedBox(
+        width: 120,
+        child: Column(
+          children: [
+            Stack(
+              fit: StackFit.passthrough,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.network(
+                    playItem["picUrl"],
+                    fit: BoxFit.cover,
+                    width: 120,
+                    height: 120,
+                  ),
                 ),
-              ),
-              const Positioned(
-                right: 5,
-                bottom: 5,
-                child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
-              ),
-            ],
-          ),
-          const Gap(10),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+                const Positioned(
+                  right: 5,
+                  bottom: 5,
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                ),
+              ],
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            const Gap(10),
+            Text(
+              playItem["name"],
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//这是排行榜的卡片
+class TopCard extends StatelessWidget {
+  final Map topItem;
+
+  const TopCard({super.key, required this.topItem});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {},
+      child: SizedBox(
+        width: 120,
+        child: Column(
+          children: [
+            Stack(
+              fit: StackFit.passthrough,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.network(
+                    topItem["coverImgUrl"],
+                    fit: BoxFit.cover,
+                    width: 120,
+                    height: 120,
+                  ),
+                ),
+                const Positioned(
+                  right: 5,
+                  bottom: 5,
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                ),
+              ],
+            ),
+            const Gap(10),
+            Text(
+              topItem["description"] ?? topItem["name"],
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class DayCommandCard extends StatelessWidget {
-  final String title;
-  final Function onTap;
-  final String url;
+  final Map dayCommandPlayItem;
 
-  const DayCommandCard({super.key, required this.title, required this.onTap, required this.url});
+  const DayCommandCard({super.key, required this.dayCommandPlayItem});
 
   @override
   Widget build(BuildContext context) {
@@ -319,11 +422,14 @@ class SongTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Gap(10),
-        Image.asset(
-          fit: BoxFit.cover,
-          "images/test.png",
-          width: 50,
-          height: 50,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: Image.asset(
+            fit: BoxFit.cover,
+            "images/test.png",
+            width: 50,
+            height: 50,
+          ),
         ),
         const Gap(10),
         const Expanded(

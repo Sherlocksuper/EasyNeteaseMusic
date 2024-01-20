@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/command_drawer/view.dart';
+import '../config.dart';
 import 'logic.dart';
 
 class MyPage extends StatelessWidget {
@@ -28,22 +29,10 @@ class MyPage extends StatelessWidget {
                   return SliverAppBar(
                     stretch: true,
                     stretchTriggerOffset: 50,
-                    backgroundColor: const Color(0xfff8f9fd)
-                    ,
+                    backgroundColor: const Color(0xfff8f9fd),
                     leading: IconButton(
                       onPressed: () async {
-                        // Scaffold.of(fatherContext).openDrawer();
-                        Dio dio = new Dio();
-
-                        var response = await dio.get("http://http://172.27.128.1:3000/search?keywords=%E6%B5%B7%E9%98%94%E5%A4%A9%E7%A9%BA");
-                        Get.defaultDialog(
-                          title: "提示",
-                          content: Text(response.toString()),
-                          textConfirm: "确定",
-                          onConfirm: () {
-                            Get.back();
-                          },
-                        );
+                        Scaffold.of(fatherContext).openDrawer();
                       },
                       icon: Icon(
                         Icons.menu,
@@ -92,13 +81,16 @@ class MyPage extends StatelessWidget {
                                   ),
                                 ),
                                 const Gap(20),
-                                const Text(
-                                  "立即登录  >",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
+                                GestureDetector(
+                                  onTap: () async {},
+                                  child: const Text(
+                                    "立即登录  >",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                    ),
                                   ),
-                                ),
+                                )
                               ],
                             ),
                           ],

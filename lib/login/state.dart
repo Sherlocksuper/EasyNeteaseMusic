@@ -6,4 +6,6 @@ class LoginState {
   }
 
   TextEditingController phoneController = TextEditingController();
+
+  var qrKey = "";
 }
