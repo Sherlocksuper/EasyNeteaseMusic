@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
-import '../logic.dart';
-
-class CommandDrawer extends Drawer {
-  CommandDrawer({super.key});
-
-  final logic = Get.put(CommendLogic());
-  final state = Get.find<CommendLogic>().state;
+class TotalDrawer extends Drawer {
+  const TotalDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -213,5 +208,3 @@ Widget buildDrawerContainer(List<Widget> children, {String? title}) {
     ),
   );
 }
-
-

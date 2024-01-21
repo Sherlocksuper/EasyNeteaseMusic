@@ -11,8 +11,13 @@ class CommendLogic extends GetxController {
 
   static int limit = 6;
 
+  bool initFlag = true;
+
   Future<void> init() async {
-    //推荐歌单
+    if (initFlag == false) {
+      return;
+    }
+    //推荐歌单的标签
     await getPlayListCatList();
     //热门歌单分类
     await getHotPlayListCatList();
@@ -22,20 +27,25 @@ class CommendLogic extends GetxController {
     await getTopList();
     //刷新界面
     await toRefresh();
+
+    initFlag = false;
   }
 
   //刷新界面
   Future<void> toRefresh() async {
+    //获取推荐歌单
     await getCommandPlayList();
+
+    //刷新排行榜
     await refreshSelectTopList();
-    await getHighqualityPlayListByTag("浪漫");
+
+    //获取三种歌单的推荐歌单
+    await getTMSPlayList();
+
+    //获取推荐节目
+    await getProgramRecommend();
+
     update();
-
-    //心情歌单
-    log(state.moodPlayListTags.toString());
-    //场景歌单
-    log(state.scenePlayList.toString());
-
   }
 
   //获取推荐歌单
@@ -99,7 +109,7 @@ class CommendLogic extends GetxController {
   }
 
   //"categories":{"0":"语种","1":"风格","2":"场景","3":"情感","4":"主题"}
-  //获取歌单分类
+  //普通歌单分类，同时分为 场景、风格、情感
   Future<void> getPlayListCatList() async {
     var response = await dio.get("$baseUrl/playlist/catlist");
     log("获取歌单分类");
@@ -111,6 +121,8 @@ class CommendLogic extends GetxController {
       state.scenePlayListTags = state.playListCatList.where((element) => element["category"] == 2).toList();
       //读取item中category为3的情感歌单
       state.moodPlayListTags = state.playListCatList.where((element) => element["category"] == 3).toList();
+      //读取item中category为4的主题歌单
+      state.themePlayListTags = state.playListCatList.where((element) => element["category"] == 4).toList();
     } else {
       Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
     }
@@ -126,6 +138,38 @@ class CommendLogic extends GetxController {
     } else {
       Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
     }
+  }
+
+  //歌单，网友精选蝶
+  Future<List<dynamic>> getNetizenSelected(String tag) async {
+    var response = await dio.get("$baseUrl/top/playlist?limit=$limit&cat=$tag");
+    log("获取网友精选歌单");
+    log(response.toString());
+    if (response.data["code"] == 200) {
+      return response.data["playlists"];
+    } else {
+      Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
+    }
+    return [];
+  }
+
+  //请求场景、情感、主题歌单
+  Future<void> getTMSPlayList() async {
+    // //从场景标签中随机选取一个
+    // var themeTag = state.themePlayListTags[Random().nextInt(state.themePlayListTags.length) - 1]["name"];
+    // state.themePlayList = await getDailyCommandPlayList(themeTag);
+    // print(themeTag);
+    // print(state.themePlayList);
+    //从心情标签中随机选取一个
+    var moodTag = state.moodPlayListTags[Random().nextInt(state.moodPlayListTags.length)]["name"];
+    state.moodPlayList = await getNetizenSelected(moodTag);
+    print(moodTag);
+    print(state.moodPlayList);
+    //从场景标签中随机选取一个
+    var sceneTag = state.scenePlayListTags[Random().nextInt(state.scenePlayListTags.length)]["name"];
+    state.scenePlayList = await getNetizenSelected(sceneTag);
+    print(sceneTag);
+    print(state.scenePlayList);
   }
 
   //获取精品歌单标签
@@ -145,6 +189,20 @@ class CommendLogic extends GetxController {
     var response = await dio.get("$baseUrl/top/playlist/highquality?cat=$tag&limit=$limit");
     log("获取精品$tag歌单");
     log(response.toString());
+    if (response.data["code"] == 200) {
+    } else {
+      Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
+    }
+  }
+
+  ///program/recommend
+  ///获取推荐节目
+  Future<void> getProgramRecommend() async {
+    var response = await dio.get("$baseUrl/program/recommend");
+    log("获取推荐节目");
+    log(response.toString());
+    log("message");
+    log(response.data["programs"][0].toString());
     if (response.data["code"] == 200) {
     } else {
       Get.defaultDialog(title: "错误", middleText: response.data["msg"]);

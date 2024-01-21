@@ -34,6 +34,14 @@ class CommendState {
 
   //**********************************//
 
+  //主题歌单的标签item们
+  List themePlayListTags = [];
+
+  //主题歌单
+  List themePlayList = [];
+
+  //**********************************//
+
   //榜单列表
   List topList = [];
 
