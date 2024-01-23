@@ -5,6 +5,8 @@ class PlayListDetailState {
     ///Initialize variables
   }
 
+  var playListId = 0;
+
   var playDetail = {};
 
   var creator = {};

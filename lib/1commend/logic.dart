@@ -155,12 +155,6 @@ class CommendLogic extends GetxController {
 
   //请求场景、情感、主题歌单
   Future<void> getTMSPlayList() async {
-    // //从场景标签中随机选取一个
-    // var themeTag = state.themePlayListTags[Random().nextInt(state.themePlayListTags.length) - 1]["name"];
-    // state.themePlayList = await getDailyCommandPlayList(themeTag);
-    // print(themeTag);
-    // print(state.themePlayList);
-    //从心情标签中随机选取一个
     var moodTag = state.moodPlayListTags[Random().nextInt(state.moodPlayListTags.length)]["name"];
     state.moodPlayList = await getNetizenSelected(moodTag);
     print(moodTag);

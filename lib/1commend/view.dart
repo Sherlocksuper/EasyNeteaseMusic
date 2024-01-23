@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -18,9 +19,18 @@ class CommendPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const Text("data"),
+
       appBar: AppBar(
         toolbarHeight: 40,
+        leading: IconButton(
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+          icon: const Icon(
+            Icons.menu,
+            color: Colors.grey,
+          ),
+        ),
         title: Container(
           height: 30,
           decoration: BoxDecoration(
@@ -45,7 +55,8 @@ class CommendPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+            },
             icon: const Icon(
               Icons.mic,
               color: Colors.grey,
@@ -270,7 +281,11 @@ class PlaylistsCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         print(playItem);
-        Get.to(() => PlayListDetailPage(), arguments: playItem);
+        Get.to(
+          () => PlayListDetailPage(
+            playListId: playItem["id"],
+          ),
+        );
       },
       child: SizedBox(
         width: 120,
@@ -281,8 +296,13 @@ class PlaylistsCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child: Image.network(
-                    playItem["picUrl"] ?? playItem["coverImgUrl"],
+                  child: CachedNetworkImage(
+                    imageUrl: playItem["picUrl"] ?? playItem["coverImgUrl"],
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey,
+                      width: 120,
+                      height: 120,
+                    ),
                     fit: BoxFit.cover,
                     width: 120,
                     height: 120,
