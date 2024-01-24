@@ -21,6 +21,4 @@ class PlayListDetailLogic extends GetxController {
 
     update();
   }
-
-
 }

@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/5my/other_user_page/view.dart';
+import 'package:wyyapp/music_play/view.dart';
 import 'package:wyyapp/playlist_square/view.dart';
 import '../../config.dart';
 import 'logic.dart';
@@ -35,14 +37,13 @@ class PlayListDetailPage extends StatelessWidget {
                 return [
                   SliverLayoutBuilder(
                     builder: (context, constraints) {
-                      final bool scrolled = constraints.scrollOffset > Get.height / 2 - 50;
+                      final bool scrolled = constraints.scrollOffset > Get.height / 3 - 50;
                       return SliverAppBar(
                         stretch: true,
                         toolbarHeight: 50,
-
-                        title: const Text(
+                        title: Text(
                           '歌单',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: scrolled ? Colors.black : Colors.white),
                         ),
                         pinned: true,
                         floating: false,
@@ -54,17 +55,21 @@ class PlayListDetailPage extends StatelessWidget {
                           background: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.asset(
-                                'images/img.png',
-                                fit: BoxFit.cover,
-                                width: double.infinity,
+                              ImageFiltered(
+                                imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: CachedNetworkImage(
+                                  imageUrl: Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"],
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
                               ),
                               Center(
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 20),
                                   child: GetBuilder<PlayListDetailLogic>(
                                     builder: (controller) {
-                                      return PlayHeader();
+                                      return const PlayHeader();
                                     },
                                   ), /*UserHeaderCard()*/
                                 ),
@@ -153,10 +158,9 @@ class PlayHeader extends StatelessWidget {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"],
+                child: CachedNetworkImage(
+                  imageUrl: Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"],
                   fit: BoxFit.cover,
-                  // centerSlice: const Rect.fromLTWH(20, 20, 20, 20),
                   width: 120,
                   height: 120,
                 ),
@@ -175,9 +179,11 @@ class PlayHeader extends StatelessWidget {
                   const Gap(10),
                   GestureDetector(
                     onTap: () {
-                      Get.to(() => OtherUserPagePage(
-                            userId: Get.find<PlayListDetailLogic>().state.creator["userId"] ?? 0,
-                          ));
+                      Get.to(
+                        () => OtherUserPagePage(
+                          userId: Get.find<PlayListDetailLogic>().state.creator["userId"] ?? 0,
+                        ),
+                      );
                     },
                     child: Row(
                       children: [
@@ -266,48 +272,54 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      height: 50,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text("$index", style: const TextStyle(color: Colors.grey)),
-          const Gap(15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: songItem["name"] ?? "默认名字",
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        TextSpan(
-                          text: songItem["alia"] == null || songItem["alia"].isEmpty ? "" : "(${songItem["alia"][0]})",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ],
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => MusicPlayPage(playItem: songItem));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("$index", style: const TextStyle(color: Colors.grey)),
+            const Gap(15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: songItem["name"] ?? "默认名字",
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          TextSpan(
+                            text:
+                                songItem["alia"] == null || songItem["alia"].isEmpty ? "" : "(${songItem["alia"][0]})",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Text(
-                    songItem["ar"][0]["name"] ?? "默认歌手 - ${songItem["al"]["name"] ?? "默认专辑"}",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  Expanded(
+                    child: Text(
+                      songItem["ar"][0]["name"] ?? "默认歌手 - ${songItem["al"]["name"] ?? "默认专辑"}",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.more_vert, color: Colors.grey),
-        ],
+            const Icon(Icons.more_vert, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }

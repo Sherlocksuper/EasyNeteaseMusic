@@ -45,6 +45,8 @@ class CommendLogic extends GetxController {
     //获取推荐节目
     await getProgramRecommend();
 
+    await getNewSong();
+
     update();
   }
 
@@ -198,6 +200,19 @@ class CommendLogic extends GetxController {
     log("message");
     log(response.data["programs"][0].toString());
     if (response.data["code"] == 200) {
+    } else {
+      Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
+    }
+  }
+
+  //推荐新音乐
+  Future<void> getNewSong() async {
+    var response = await dio.get("$baseUrl/personalized/newsong?limit=9");
+    log("获取推荐新音乐");
+    log(response.toString());
+    if (response.data["code"] == 200) {
+      state.newSongList = response.data["result"];
+      print(state.newSongList);
     } else {
       Get.defaultDialog(title: "错误", middleText: response.data["msg"]);
     }

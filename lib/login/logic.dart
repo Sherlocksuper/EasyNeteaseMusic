@@ -15,14 +15,17 @@ class LoginLogic extends GetxController {
     print(value);
 
     if (value.data["code"] == 200) {
-      LoginPrefs.setMap(value.data);
+      await LoginPrefs.setMap(value.data);
+      // await LoginPrefs.setUserId(1897106867);
       dio.options.headers["cookie"] = LoginPrefs.getCookie();
+      Get.offAll(() => TabViewPage());
     } else {
       Get.defaultDialog(title: "错误", middleText: value.data["msg"]);
     }
   }
 
   // login/qr/key
+  //获取key
   Future<void> getQrKey() async {
     var value = await dio.get("$baseUrl/login/qr/key?timestamp=${DateTime.now().millisecondsSinceEpoch}");
     log("获取二维码key");
@@ -53,20 +56,36 @@ class LoginLogic extends GetxController {
         ),
       );
       update();
+
+      Future.doWhile(() async {
+        await Future.delayed(const Duration(seconds: 1));
+        var response = await getQrCode();
+
+        if (response == false) {
+          return false;
+        }
+
+        return true;
+      });
     } else {
       Get.defaultDialog(title: "错误", middleText: value.data["msg"]);
     }
   }
 
-  Future<void> getQrCode() async {
-    var value =
-        await dio.get("$baseUrl/login/qr/check?key=${state.qrKey}&timestamp=${DateTime.now().millisecondsSinceEpoch}");
+  Future getQrCode() async {
+    var value = await dio.get(
+        "$baseUrl/login/qr/check?key=${state.qrKey}&timestamp=${DateTime.now().millisecondsSinceEpoch}&noCookie=true");
     log("二维码登录");
     log(value.toString());
-    if (value.data["code"] == 200) {
+
+    if (value.data["code"] == 803) {
+      await LoginPrefs.setCookie(value.data["cookie"]);
+      await LoginPrefs.setUserId(1897106867);
+      dio.options.headers["cookie"] = LoginPrefs.getCookie();
+      Get.offAll(() => TabViewPage());
       update();
-    } else {
-      Get.defaultDialog(title: "错误", middleText: value.data["msg"]);
+      return false;
     }
+    return true;
   }
 }

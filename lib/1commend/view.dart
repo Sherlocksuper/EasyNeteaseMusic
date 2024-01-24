@@ -1,12 +1,10 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/play_list_detail/view.dart';
-import 'package:wyyapp/search/view.dart';
+import 'package:wyyapp/music_play/view.dart';
 import '../config.dart';
 import 'logic.dart';
 
@@ -19,20 +17,20 @@ class CommendPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         toolbarHeight: 40,
-        leading: IconButton(
-          onPressed: () {
+        bottom: null,
+        leading: GestureDetector(
+          onTap: () {
             Scaffold.of(context).openDrawer();
           },
-          icon: const Icon(
+          child: const Icon(
             Icons.menu,
-            color: Colors.grey,
+            color: Colors.black,
           ),
         ),
         title: Container(
-          height: 30,
+          height: 40,
           decoration: BoxDecoration(
             color: defaultColor,
             borderRadius: BorderRadius.circular(40),
@@ -55,8 +53,7 @@ class CommendPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-            },
+            onPressed: () {},
             icon: const Icon(
               Icons.mic,
               color: Colors.grey,
@@ -66,7 +63,7 @@ class CommendPage extends StatelessWidget {
       ),
       body: Container(
         color: Colors.white,
-        padding: const EdgeInsets.only(top: 20),
+        padding: const EdgeInsets.only(top: 10),
         child: CustomMaterialIndicator(
           child: const SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -126,63 +123,9 @@ class CommandContent extends StatelessWidget {
                 ),
               ],
             ),
-
-            //推荐歌单
             ShowShieldForCard(title: "推荐歌单", source: Get.find<CommendLogic>().state.commandPlayList),
-
-            //热门榜单
-            buildShowShield(
-              SubTitle(
-                title: "热门榜单",
-                onTap: () {},
-              ),
-              SizedBox(
-                height: 180,
-                width: Get.width,
-                child: GetBuilder<CommendLogic>(
-                  builder: (controller) {
-                    return PageView.builder(
-                      controller: controller.state.pageController,
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        return PageItem();
-                      },
-                      itemCount: 3,
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            //排行榜
+            ShowShieldForSong(title: "新歌推荐", source: Get.find<CommendLogic>().state.newSongList),
             ShowShieldForCard(title: "排行榜", source: Get.find<CommendLogic>().state.selectTopList),
-
-            //热门榜单
-            buildShowShield(
-              SubTitle(
-                title: "新人都在听",
-                onTap: () {},
-              ),
-              SizedBox(
-                height: 180,
-                width: Get.width,
-                child: GetBuilder<CommendLogic>(
-                  builder: (controller) {
-                    return PageView.builder(
-                      controller: controller.state.pageController,
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        return const PageItem();
-                      },
-                      itemCount: 3,
-                    );
-                  },
-                ),
-              ),
-            ),
-
             ShowShieldForCard(title: "心情歌单", source: Get.find<CommendLogic>().state.moodPlayList),
             ShowShieldForCard(title: "场景歌单", source: Get.find<CommendLogic>().state.scenePlayList),
           ],
@@ -204,68 +147,88 @@ class ShowShieldForCard extends StatelessWidget {
     if (source.isEmpty) {
       return const SizedBox();
     }
-    return Column(
-      children: [
-        const Gap(20),
-        SubTitle(title: title, onTap: onTap),
-        const Gap(15),
-        SizedBox(
-          height: 170,
-          width: Get.width,
-          child: ListView.separated(
-            primary: true,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              return PlaylistsCard(
-                playItem: source[index],
-              );
-            },
-            separatorBuilder: (context, index) {
-              return const Gap(10);
-            },
-            itemCount: source.length,
-          ),
-        ),
-        const Gap(10),
-      ],
+    return GetBuilder<CommendLogic>(
+      builder: (logic) {
+        return Column(
+          children: [
+            const Gap(20),
+            SubTitle(title: title, onTap: onTap),
+            const Gap(15),
+            SizedBox(
+              height: 170,
+              width: Get.width,
+              child: ListView.separated(
+                primary: true,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  return PlaylistsCard(
+                    playItem: source[index],
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return const Gap(10);
+                },
+                itemCount: source.length,
+              ),
+            ),
+            const Gap(10),
+          ],
+        );
+      },
     );
   }
 }
 
-Widget buildShowShield(Widget title, Widget content) {
-  return Column(
-    children: [
-      const Gap(20),
-      title,
-      const Gap(15),
-      content,
-      const Gap(10),
-    ],
-  );
-}
+//推荐音乐
+class ShowShieldForSong extends StatelessWidget {
+  final String title;
+  final Function? onTap;
+  final List source;
 
-class PageItem extends StatelessWidget {
-  const PageItem({super.key});
+  const ShowShieldForSong({super.key, required this.title, this.onTap, required this.source});
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: Offset(Get.width * (-0.05) / 2, 0),
-      child: SizedBox(
-        width: Get.width,
-        child: ListView.separated(
-          itemCount: 3,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            return const SongTile();
-          },
-          separatorBuilder: (BuildContext context, int index) {
-            return const Gap(10);
-          },
+    return Column(
+      children: [
+        const Gap(20),
+        SubTitle(title: title, onTap: () {}),
+        const Gap(15),
+        SizedBox(
+          height: 180,
+          width: Get.width,
+          child: GetBuilder<CommendLogic>(
+            builder: (controller) {
+              return PageView.builder(
+                controller: controller.state.pageController,
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, pageIndex) {
+                  return Transform.translate(
+                    offset: Offset(Get.width * (-0.05) / 2, 0),
+                    child: SizedBox(
+                      width: Get.width,
+                      child: ListView.separated(
+                        itemCount: 3,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, itemIndex) {
+                          return SongTile(songItem: source[pageIndex * 3 + itemIndex + 1]);
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return const Gap(10);
+                        },
+                      ),
+                    ),
+                  );
+                },
+                itemCount: 3,
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -377,52 +340,60 @@ class DayCommandCard extends StatelessWidget {
 }
 
 class SongTile extends StatelessWidget {
-  const SongTile({super.key});
+  final Map songItem;
+
+  const SongTile({super.key, required this.songItem});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Gap(10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: Image.asset(
-            fit: BoxFit.cover,
-            "images/test.png",
-            width: 50,
-            height: 50,
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => MusicPlayPage(playItem: songItem));
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Gap(10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: CachedNetworkImage(
+              imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
+              fit: BoxFit.cover,
+              width: 50,
+              height: 50,
+              fadeInDuration: const Duration(milliseconds: 100),
+            ),
           ),
-        ),
-        const Gap(10),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "歌曲标题",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
+          const Gap(10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  songItem["name"] ?? songItem["title"],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
-              Gap(5),
-              Text(
-                "歌手名",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+                const Gap(5),
+                Text(
+                  songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const Icon(
-          Icons.play_arrow,
-          color: Colors.grey,
-        ),
-        const Gap(10),
-      ],
+          const Icon(
+            Icons.play_arrow,
+            color: Colors.grey,
+          ),
+          const Gap(10),
+        ],
+      ),
     );
   }
 }

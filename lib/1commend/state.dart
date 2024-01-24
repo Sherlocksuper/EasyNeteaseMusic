@@ -48,6 +48,8 @@ class CommendState {
   //选择的榜单分类
   List selectTopList = [];
 
+  List newSongList = [];
+
   //**********************************//
 
   CommendState() {

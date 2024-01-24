@@ -5,6 +5,7 @@ import 'package:wyyapp/2find/view.dart';
 import 'package:wyyapp/3roam/view.dart';
 import 'package:wyyapp/4dynamic/view.dart';
 import 'package:wyyapp/5my/view.dart';
+import 'package:wyyapp/KeepAliveWrapper.dart';
 import 'package:wyyapp/tab_view/drawer/view.dart';
 import 'logic.dart';
 
@@ -25,11 +26,11 @@ class TabViewPage extends StatelessWidget {
           logic.update();
         },
         children: [
-          CommendPage(),
-          FindPage(),
-          RoamPage(),
-          DynamicPage(),
-          MyPage(),
+          KeepAliveWrapper(child: CommendPage()),
+          KeepAliveWrapper(child: FindPage()),
+          KeepAliveWrapper(child: RoamPage()),
+          // DynamicPage(),
+          KeepAliveWrapper(child: MyPage()),
         ],
       ),
       bottomNavigationBar: GetBuilder<TabViewLogic>(
@@ -56,11 +57,11 @@ class TabViewPage extends StatelessWidget {
                 icon: Icon(Icons.radio_outlined),
                 label: "漫游",
               ),
-              BottomNavigationBarItem(
-                //微信chat
-                icon: Icon(Icons.chat_outlined),
-                label: "动态",
-              ),
+              // BottomNavigationBarItem(
+              //   //微信chat
+              //   icon: Icon(Icons.chat_outlined),
+              //   label: "动态",
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_2_outlined),
                 label: "我的",

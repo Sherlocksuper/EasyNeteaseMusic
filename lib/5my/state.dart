@@ -4,4 +4,6 @@ class MyState {
   MyState() {
     ///Initialize variables
   }
+
+  Map userInfo = {};
 }

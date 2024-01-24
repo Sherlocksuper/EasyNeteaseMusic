@@ -50,7 +50,9 @@ class DynamicPage extends StatelessWidget {
           ),
           actions: [
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                logic.getDynamic();
+              },
               child: const Icon(
                 Icons.add_circle,
                 color: Colors.red,
