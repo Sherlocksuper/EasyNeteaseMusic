@@ -10,6 +10,7 @@ import 'package:wyyapp/Song.dart';
 import 'package:wyyapp/utils.dart';
 import '../config.dart';
 import '../music_play/view.dart';
+import '../search/view.dart';
 import 'logic.dart';
 
 class CommendPage extends StatelessWidget {
@@ -22,7 +23,7 @@ class CommendPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 40,
+        toolbarHeight: 50,
         leading: GestureDetector(
           onTap: () {
             Scaffold.of(context).openDrawer();
@@ -32,24 +33,29 @@ class CommendPage extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-        title: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: defaultColor,
-            borderRadius: BorderRadius.circular(40),
-          ),
-          child: const TextField(
-            enabled: false,
-            decoration: InputDecoration(
-              hintText: "搜索歌曲、歌手、专辑",
-              hintStyle: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-              border: InputBorder.none,
-              prefixIcon: Icon(
-                Icons.search,
-                color: Colors.grey,
+        title: GestureDetector(
+          onTap: () {
+            Get.to(() => SearchPage());
+          },
+          child: Container(
+            height: 35,
+            decoration: BoxDecoration(
+              color: defaultColor,
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: const TextField(
+              enabled: false,
+              decoration: InputDecoration(
+                hintText: "搜索歌曲、歌手、专辑",
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+                border: InputBorder.none,
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey,
+                ),
               ),
             ),
           ),
@@ -66,7 +72,6 @@ class CommendPage extends StatelessWidget {
       ),
       body: Container(
         color: Colors.white,
-        padding: const EdgeInsets.only(top: 10),
         child: CustomMaterialIndicator(
           child: const SingleChildScrollView(
             physics: BouncingScrollPhysics(),

@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
 
 ThemeData themeData = ThemeData(
   appBarTheme: const AppBarTheme(
+    scrolledUnderElevation: 0,
     toolbarHeight: 35,
     backgroundColor: Colors.white,
     titleTextStyle: TextStyle(

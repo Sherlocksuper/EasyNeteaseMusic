@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/config.dart';
-
 import 'logic.dart';
 
 class SearchPage extends StatelessWidget {
@@ -17,7 +16,7 @@ class SearchPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Future(() async => {await logic.getSearchDefault(), await logic.getSearchHotDetail()}),
+      future: Future(() async => {await logic.getSearchDefault(), await logic.getSearchHotList()}),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -25,18 +24,22 @@ class SearchPage extends StatelessWidget {
           );
         }
         return Scaffold(
+          backgroundColor: defaultColor,
           appBar: AppBar(
             toolbarHeight: 40,
             backgroundColor: defaultColor,
             title: Container(
-              height: 30,
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(40),
               ),
               child: GetBuilder<SearchLogic>(
                 builder: (controller) {
                   return TextField(
+                    onChanged: (value) {
+                      if (value != "") {
+                        controller.getSearchSuggest(value);
+                      }
+                    },
                     decoration: InputDecoration(
                       hintText: state.searchDefault,
                       hintStyle: const TextStyle(
@@ -54,11 +57,14 @@ class SearchPage extends StatelessWidget {
               ),
             ),
             actions: [
-              IconButton(
+              TextButton(
                 onPressed: () {},
-                icon: const Icon(
-                  Icons.search,
-                  color: Colors.black,
+                child: const Text(
+                  "搜索",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ],
@@ -78,9 +84,18 @@ class SearchPage extends StatelessWidget {
               ),
             ),
           ),
-          body: const Padding(
-            padding: EdgeInsets.only(top: 15),
-            child: SearchBody(),
+          body: Padding(
+            padding: const EdgeInsets.only(top: 15),
+            child: GetBuilder<SearchLogic>(
+              id: "searchSuggest",
+              builder: (logic) {
+                if (logic.state.searchSuggest.isEmpty && logic.state.searchDefault != "") {
+                  return const SearchBody();
+                } else {
+                  return  SearchSuggestList();
+                }
+              },
+            ),
           ),
         );
       },
@@ -124,7 +139,7 @@ class SearchBody extends StatelessWidget {
               controller: PageController(viewportFraction: 0.7),
               scrollBehavior: const MaterialScrollBehavior().copyWith(overscroll: false),
               itemBuilder: (context, index) {
-                return SearchPlacard(list: Get.find<SearchLogic>().state.searchHotDetail, index: index);
+                return SearchPlacard(list: Get.find<SearchLogic>().state.searchHotList, index: index);
               },
               itemCount: 6,
             ),
@@ -135,21 +150,7 @@ class SearchBody extends StatelessWidget {
   }
 }
 
-class MVerticalDivider extends StatelessWidget {
-  const MVerticalDivider({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 1,
-      height: 12,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: Colors.grey),
-      ),
-    );
-  }
-}
-
+//搜索页的每个pageview
 class SearchPlacard extends StatelessWidget {
   //传进来一个list
   final List list;
@@ -178,43 +179,97 @@ class SearchPlacard extends StatelessWidget {
       ),
     );
   }
-}
 
-Widget searchItem(var item, int index) {
-  return SizedBox(
-    height: 40,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        const Gap(10),
-        Text(
-          "${index + 1}",
-          style: TextStyle(
-            fontSize: 16,
-            color: index < 3 ? Colors.red : Colors.grey,
-          ),
-        ),
-        const Gap(10),
-        Text(
-          item["searchWord"],
-          style: const TextStyle(
-            fontSize: 14,
-            //小于3的加粗
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const Gap(10),
-        if (item["iconUrl"] != null)
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(item["iconUrl"]),
-              ),
+  Widget searchItem(var item, int index) {
+    return SizedBox(
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Gap(10),
+          Text(
+            "${index + 1}",
+            style: TextStyle(
+              fontSize: 16,
+              color: index < 3 ? Colors.red : Colors.grey,
             ),
           ),
-      ],
-    ),
-  );
+          const Gap(10),
+          Text(
+            item["searchWord"],
+            style: const TextStyle(
+              fontSize: 14,
+              //小于3的加粗
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Gap(10),
+          if (item["iconUrl"] != null)
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(item["iconUrl"]),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class SearchSuggestList extends StatelessWidget {
+  SearchSuggestList({super.key});
+
+  final logic = Get.find<SearchLogic>();
+  final state = Get.find<SearchLogic>().state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: ListView.builder(
+        itemCount: state.searchSuggest.length,
+        itemBuilder: (context, index) {
+          return searchSuggestItem(state.searchSuggest[index]);
+        },
+      ),
+    );
+  }
+
+  Widget searchSuggestItem(var item) {
+    return SizedBox(
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Gap(10),
+          Text(
+            item["keyword"],
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//纵向下划线
+class MVerticalDivider extends StatelessWidget {
+  const MVerticalDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 1,
+      height: 12,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: Colors.grey),
+      ),
+    );
+  }
 }
