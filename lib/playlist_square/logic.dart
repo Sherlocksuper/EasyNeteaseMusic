@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
-
 import '../config.dart';
 import 'state.dart';
 

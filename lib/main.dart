@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/login/view.dart';
+import 'package:wyyapp/tab_view/view.dart';
 
 void main() {
+  WidgetsBinding instance = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: instance);
+
   runApp(const MyApp());
 }
 
@@ -14,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ShowPage(),
+      home: TabViewPage(),
       builder: EasyLoading.init(),
       theme: themeData,
       darkTheme: darkThemeData,

@@ -1,8 +1,6 @@
 import 'dart:developer';
-
 import 'package:get/get.dart';
 import 'package:wyyapp/config.dart';
-
 import 'state.dart';
 
 class PlayListDetailLogic extends GetxController {

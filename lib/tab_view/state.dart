@@ -10,4 +10,6 @@ class TabViewState {
   int currentIndex = 0;
 
   late BuildContext context;
+
+  Map playItem = {};
 }

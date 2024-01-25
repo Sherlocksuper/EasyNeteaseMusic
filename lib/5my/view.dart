@@ -1,6 +1,9 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:wyyapp/config.dart';
 import 'logic.dart';
 
 class MyPage extends StatelessWidget {
@@ -28,6 +31,7 @@ class MyPage extends StatelessWidget {
           );
         }
         return Scaffold(
+          backgroundColor: defaultColor,
           body: NestedScrollView(
             physics: const BouncingScrollPhysics(),
             headerSliverBuilder: (BuildContext context, bool innerBoxIsScroll) {
@@ -35,9 +39,10 @@ class MyPage extends StatelessWidget {
                 SliverLayoutBuilder(
                   builder: (BuildContext context, constraints) {
                     return SliverAppBar(
+                      toolbarHeight: 40,
                       stretch: true,
                       stretchTriggerOffset: 50,
-                      backgroundColor: const Color(0xfff8f9fd),
+                      backgroundColor: Colors.transparent,
                       leading: IconButton(
                         onPressed: () async {
                           Scaffold.of(fatherContext).openDrawer();
@@ -66,7 +71,8 @@ class MyPage extends StatelessWidget {
               ];
             },
             body: const SingleChildScrollView(
-              child: SelfPage(),
+              physics: BouncingScrollPhysics(),
+              child: Padding(padding: EdgeInsets.only(top: 20, right: 20, left: 20), child: SelfPage()),
             ),
           ),
         );
@@ -78,13 +84,155 @@ class MyPage extends StatelessWidget {
 class SelfPage extends StatelessWidget {
   const SelfPage({super.key});
 
+  final double radius = 40.0;
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Column(
+              children: [
+                Container(
+                  height: radius,
+                  width: double.infinity,
+                  color: Colors.transparent,
+                ),
+                Container(
+                  height: radius * 3,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 1,
+                        blurRadius: 10,
+                        offset: const Offset(0, 3), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 10,
+                  spacing: 10,
+                  direction: Axis.vertical,
+                  children: [
+                    ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: Get.find<MyLogic>().state.userInfo["profile"]["avatarUrl"],
+                        width: radius * 2,
+                        height: radius * 2,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        Get.find<MyLogic>().logout();
+                      },
+                      child: Text(
+                        Get.find<MyLogic>().state.userInfo["profile"]["nickname"],
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "关注 ${Get.find<MyLogic>().state.userInfo["profile"]["follows"]}",
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const Gap(10),
+                        Text(
+                          "粉丝 ${Get.find<MyLogic>().state.userInfo["profile"]["followeds"]}",
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const Gap(10),
+                        Text(
+                          "等级 ${Get.find<MyLogic>().state.userInfo["level"]}",
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+        const Gap(20),
+        Container(
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+          width: Get.height,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 1,
+                blurRadius: 10,
+                offset: const Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1,
+            ),
+            itemCount: Get.find<MyLogic>().state.iconList.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  Icon(
+                    Get.find<MyLogic>().state.iconList.values.toList()[index],
+                    size: 30,
+                    color: Colors.red,
+                  ),
+                  const Gap(10),
+                  AutoSizeText(
+                    Get.find<MyLogic>().state.iconList.keys.toList()[index],
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                  ),
+                ],
+              );
+            },
+          ),
+        )
+      ],
+    );
   }
 }
 
-//前去添加之类的
+class SelfPlayList extends StatelessWidget {
+  const SelfPlayList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: TabBar(
+          tabs: [],
+        ),
+      ),
+    );
+  }
+}
+
 class NoDataShowTile extends StatelessWidget {
   IconData icon;
   String title;

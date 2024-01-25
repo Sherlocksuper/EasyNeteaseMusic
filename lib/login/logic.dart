@@ -12,11 +12,10 @@ class LoginLogic extends GetxController {
 
   Future<void> loginAsVisitor() async {
     var value = await dio.get("$baseUrl/register/anonimous");
-    print(value);
 
     if (value.data["code"] == 200) {
       await LoginPrefs.setMap(value.data);
-      // await LoginPrefs.setUserId(1897106867);
+      await LoginPrefs.setUserId(1897106867);
       dio.options.headers["cookie"] = LoginPrefs.getCookie();
       Get.offAll(() => TabViewPage());
     } else {
@@ -24,8 +23,6 @@ class LoginLogic extends GetxController {
     }
   }
 
-  // login/qr/key
-  //获取key
   Future<void> getQrKey() async {
     var value = await dio.get("$baseUrl/login/qr/key?timestamp=${DateTime.now().millisecondsSinceEpoch}");
     log("获取二维码key");
@@ -39,7 +36,6 @@ class LoginLogic extends GetxController {
     }
   }
 
-  //login/qr/create?key=xxx
   Future<void> getQrImage() async {
     var value = await dio.get(
         "$baseUrl/login/qr/create?key=${state.qrKey}&qrimg=true&timestamp=${DateTime.now().millisecondsSinceEpoch}");
@@ -81,6 +77,7 @@ class LoginLogic extends GetxController {
     if (value.data["code"] == 803) {
       await LoginPrefs.setCookie(value.data["cookie"]);
       await LoginPrefs.setUserId(1897106867);
+
       dio.options.headers["cookie"] = LoginPrefs.getCookie();
       Get.offAll(() => TabViewPage());
       update();

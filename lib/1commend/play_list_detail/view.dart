@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/5my/other_user_page/view.dart';
-import 'package:wyyapp/music_play/view.dart';
+import 'package:wyyapp/Song.dart';
 import 'package:wyyapp/playlist_square/view.dart';
-import '../../config.dart';
+import '../../utils.dart';
 import 'logic.dart';
 
 class PlayListDetailPage extends StatelessWidget {
@@ -22,119 +22,120 @@ class PlayListDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     state.playListId = playListId;
     return FutureBuilder(
-        future: Future(
-          () async => {
-            await logic.getPlayDetail(),
-          },
-        ),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          } else {
-            return NestedScrollView(
-              scrollBehavior: const ScrollBehavior().copyWith(overscroll: false),
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                return [
-                  SliverLayoutBuilder(
-                    builder: (context, constraints) {
-                      final bool scrolled = constraints.scrollOffset > Get.height / 3 - 50;
-                      return SliverAppBar(
-                        stretch: true,
-                        toolbarHeight: 50,
-                        title: Text(
-                          '歌单',
-                          style: TextStyle(color: scrolled ? Colors.black : Colors.white),
-                        ),
-                        pinned: true,
-                        floating: false,
-                        //此处的距离计算可以推断出和上下两个bar的相隔距离，如果不需要可以直接设置为0
-                        expandedHeight: Get.height * 0.3 + 100,
-                        flexibleSpace: FlexibleSpaceBar(
-                          collapseMode: CollapseMode.pin,
-                          centerTitle: true,
-                          background: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ImageFiltered(
-                                imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                child: CachedNetworkImage(
-                                  imageUrl: Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"],
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
+      future: Future(
+        () async => {
+          await logic.getPlayDetail(),
+        },
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else {
+          return NestedScrollView(
+            scrollBehavior: const ScrollBehavior().copyWith(overscroll: false),
+            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              return [
+                SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    final bool scrolled = constraints.scrollOffset > Get.height / 3 - 50;
+                    return SliverAppBar(
+                      stretch: true,
+                      toolbarHeight: 50,
+                      title: Text(
+                        '歌单',
+                        style: TextStyle(color: scrolled ? Colors.black : Colors.white),
+                      ),
+                      pinned: true,
+                      floating: false,
+                      //此处的距离计算可以推断出和上下两个bar的相隔距离，如果不需要可以直接设置为0
+                      expandedHeight: Get.height * 0.3 + 100,
+                      flexibleSpace: FlexibleSpaceBar(
+                        collapseMode: CollapseMode.pin,
+                        centerTitle: true,
+                        background: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ImageFiltered(
+                              imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: CachedNetworkImage(
+                                imageUrl: Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"],
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
                               ),
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: GetBuilder<PlayListDetailLogic>(
-                                    builder: (controller) {
-                                      return const PlayHeader();
-                                    },
-                                  ), /*UserHeaderCard()*/
-                                ),
+                            ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: GetBuilder<PlayListDetailLogic>(
+                                  builder: (controller) {
+                                    return const PlayHeader();
+                                  },
+                                ), /*UserHeaderCard()*/
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(50),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              const Icon(
+                                Icons.play_circle_fill_outlined,
+                                color: Colors.red,
+                              ),
+                              const Gap(10),
+                              const Text("播放全部"),
+                              Text("(共${Get.find<PlayListDetailLogic>().state.playDetail["trackCount"]}首)",
+                                  style: const TextStyle(color: Colors.grey)),
+                              const Spacer(),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.download_rounded),
+                              ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.check_circle_outline),
                               ),
                             ],
                           ),
                         ),
-                        bottom: PreferredSize(
-                          preferredSize: const Size.fromHeight(50),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Icon(
-                                  Icons.play_circle_fill_outlined,
-                                  color: Colors.red,
-                                ),
-                                const Gap(10),
-                                const Text("播放全部"),
-                                Text("(共${Get.find<PlayListDetailLogic>().state.playDetail["trackCount"]}首)",
-                                    style: const TextStyle(color: Colors.grey)),
-                                const Spacer(),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.download_rounded),
-                                ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.check_circle_outline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ];
-              },
-              body: Container(
-                width: Get.width,
-                color: Colors.white,
-                child: GetBuilder<PlayListDetailLogic>(
-                  builder: (controller) {
-                    return ListView.builder(
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      itemCount: state.songlist.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return SongTile(songItem: state.songlist[index], index: index + 1);
-                      },
+                      ),
                     );
                   },
                 ),
+              ];
+            },
+            body: Container(
+              width: Get.width,
+              color: Colors.white,
+              child: GetBuilder<PlayListDetailLogic>(
+                builder: (controller) {
+                  return ListView.builder(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                    itemCount: state.songlist.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return SongTile(songItem: state.songlist[index], index: index + 1);
+                    },
+                  );
+                },
               ),
-            );
-          }
-        });
+            ),
+          );
+        }
+      },
+    );
   }
 }
 
@@ -274,7 +275,7 @@ class SongTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.to(() => MusicPlayPage(playItem: songItem));
+        SongManager.playMusic(songItem);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -291,6 +292,7 @@ class SongTile extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RichText(
+                      maxLines: 1,
                       text: TextSpan(
                         children: [
                           TextSpan(

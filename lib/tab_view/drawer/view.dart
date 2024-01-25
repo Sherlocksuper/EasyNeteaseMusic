@@ -18,7 +18,7 @@ class TotalDrawer extends Drawer {
                 children: [
                   ClipOval(
                     child: Image.asset(
-                      "images/login.jpg",
+                      "images/login.png",
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,

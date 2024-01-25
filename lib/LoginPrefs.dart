@@ -16,6 +16,7 @@ class LoginPrefs {
   }
 
   static String getCookie() {
+
     return prefs.getString("cookie") ?? "null";
   }
 

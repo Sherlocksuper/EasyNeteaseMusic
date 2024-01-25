@@ -5,11 +5,11 @@ class MusicPlayState {
     ///Initialize variables
   }
 
-  bool playState = false;
+  bool playState = true;
+
+  bool showDetail = false;
 
   String songUrl = '';
 
-  Map songItem = {};
-
-  final player = AudioPlayer();
+  Duration duration = const Duration();
 }

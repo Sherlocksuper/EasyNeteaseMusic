@@ -1,11 +1,15 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/1commend/play_list_detail/view.dart';
-import 'package:wyyapp/music_play/view.dart';
+import 'package:wyyapp/1commend/play_list_detail/view.dart' hide SongTile;
+import 'package:wyyapp/Song.dart';
+import 'package:wyyapp/utils.dart';
 import '../config.dart';
+import '../music_play/view.dart';
 import 'logic.dart';
 
 class CommendPage extends StatelessWidget {
@@ -19,7 +23,6 @@ class CommendPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 40,
-        bottom: null,
         leading: GestureDetector(
           onTap: () {
             Scaffold.of(context).openDrawer();
@@ -94,14 +97,10 @@ class CommandContent extends StatelessWidget {
       future: Future(
         () async => {
           await Get.find<CommendLogic>().init(),
+          FlutterNativeSplash.remove(),
         },
       ),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -159,6 +158,7 @@ class ShowShieldForCard extends StatelessWidget {
               width: Get.width,
               child: ListView.separated(
                 primary: true,
+                shrinkWrap: true,
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.only(left: 10, right: 10),
                 scrollDirection: Axis.horizontal,
@@ -233,6 +233,65 @@ class ShowShieldForSong extends StatelessWidget {
   }
 }
 
+class SongTile extends StatelessWidget {
+  final Map songItem;
+
+  const SongTile({super.key, required this.songItem});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        SongManager.playMusic(songItem);
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Gap(10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: CachedNetworkImage(
+              imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
+              fit: BoxFit.cover,
+              width: 50,
+              height: 50,
+              fadeInDuration: const Duration(milliseconds: 100),
+            ),
+          ),
+          const Gap(10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  songItem["name"] ?? songItem["title"],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const Gap(5),
+                Text(
+                  songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.play_arrow,
+            color: Colors.grey,
+          ),
+          const Gap(10),
+        ],
+      ),
+    );
+  }
+}
+
 //这是歌单的卡片
 class PlaylistsCard extends StatelessWidget {
   final Map playItem;
@@ -279,120 +338,19 @@ class PlaylistsCard extends StatelessWidget {
               ],
             ),
             const Gap(10),
-            Text(
-              playItem["name"] ?? playItem["title"],
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DayCommandCard extends StatelessWidget {
-  final Map dayCommandPlayItem;
-
-  const DayCommandCard({super.key, required this.dayCommandPlayItem});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(5),
-      child: SizedBox(
-        width: 150,
-        height: 180,
-        child: Stack(
-          fit: StackFit.passthrough,
-          children: [
-            Image.asset(
-              fit: BoxFit.cover,
-              "images/test.png",
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                width: 150,
-                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
+            Expanded(
+              child: AutoSizeText(
+                playItem["name"] ?? playItem["title"],
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: const Text(
-                  "离别开出花，我想念、浮光,01",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class SongTile extends StatelessWidget {
-  final Map songItem;
-
-  const SongTile({super.key, required this.songItem});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Get.to(() => MusicPlayPage(playItem: songItem));
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Gap(10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: CachedNetworkImage(
-              imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
-              fit: BoxFit.cover,
-              width: 50,
-              height: 50,
-              fadeInDuration: const Duration(milliseconds: 100),
-            ),
-          ),
-          const Gap(10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  songItem["name"] ?? songItem["title"],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const Gap(5),
-                Text(
-                  songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.play_arrow,
-            color: Colors.grey,
-          ),
-          const Gap(10),
-        ],
       ),
     );
   }

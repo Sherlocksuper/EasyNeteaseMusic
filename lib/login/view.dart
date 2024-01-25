@@ -1,43 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/LoginPrefs.dart';
-
 import '../config.dart';
 import '../tab_view/view.dart';
 import 'logic.dart';
 
-class ShowPage extends StatelessWidget {
-  ShowPage({Key? key}) : super(key: key);
-
-  final logic = Get.put(LoginLogic());
-  final state = Get.find<LoginLogic>().state;
-
-  @override
-  Widget build(BuildContext context) {
-    Future.delayed(
-      const Duration(seconds: 1),
-      () async {
-        await LoginPrefs.init();
-        if (LoginPrefs.getCookie() == "null") {
-Get.off(() => LoginPage());
-        } else {
-          dio.options.headers["cookie"] = LoginPrefs.getCookie();
-          Get.off(() => TabViewPage());
-        }
-      },
-    );
-
-    return Image(
-      image: LoginPrefs.getAssetImages("login.jpg"),
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-    );
-  }
-}
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});

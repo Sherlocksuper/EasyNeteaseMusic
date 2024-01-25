@@ -49,6 +49,10 @@ dependencies:
   audioplayers: ^5.2.1
   audio_video_progress_bar: ^2.0.1
   url_launcher: ^6.2.4
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.1.1
+  path_provider: ^2.1.2
+  flutter_native_splash: ^2.3.9
 
 dev_dependencies:
   flutter_test:
@@ -100,4 +104,22 @@ flutter:
       #         weight: 700
       #
       # For details regarding fonts from package dependencies,
-    # see https://flutter.dev/custom-fonts/#from-packages
+      # see https://flutter.dev/custom-fonts/#from-packages
+
+
+
+flutter_native_splash:
+  web: false
+
+
+  color: "#dc2c1f"
+  image: "images/img_1.png"
+  image_dark: "images/img_1.png"
+
+  android_12:
+
+    color: "#dc2c1f"
+    image: "images/img_1.png"
+    image_dark: "images/img_1.png"
+
+    #flutter pub run flutter_native_splash:create

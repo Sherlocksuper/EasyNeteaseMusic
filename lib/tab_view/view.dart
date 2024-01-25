@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/view.dart';
 import 'package:wyyapp/2find/view.dart';
 import 'package:wyyapp/3roam/view.dart';
-import 'package:wyyapp/4dynamic/view.dart';
 import 'package:wyyapp/5my/view.dart';
 import 'package:wyyapp/KeepAliveWrapper.dart';
+import 'package:wyyapp/LoginPrefs.dart';
+import 'package:wyyapp/config.dart';
+import 'package:wyyapp/login/view.dart';
 import 'package:wyyapp/tab_view/drawer/view.dart';
 import 'logic.dart';
 
@@ -17,6 +20,34 @@ class TabViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Future.delayed(
+      const Duration(seconds: 1),
+      () async {
+        await LoginPrefs.init();
+        if (LoginPrefs.getCookie() == "null") {
+          FlutterNativeSplash.remove();
+          Get.offAll(() => LoginPage());
+        }
+        dio.options.headers["cookie"] = LoginPrefs.getCookie();
+      },
+    );
+
+    return Scaffold(
+      body: TabViewContent(),
+    );
+  }
+}
+
+class TabViewContent extends StatelessWidget {
+  TabViewContent({super.key});
+
+  //find
+  final logic = Get.find<TabViewLogic>();
+  final state = Get.find<TabViewLogic>().state;
+
+  @override
+  Widget build(BuildContext context) {
+    sheetContext = context;
     return Scaffold(
       drawer: const TotalDrawer(),
       body: PageView(
