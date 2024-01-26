@@ -16,10 +16,4 @@ class MusicPlayLogic extends GetxController with GetSingleTickerProviderStateMix
     RController.dispose();
     super.dispose();
   }
-
-  void stopMusic() {
-    RController.stop();
-    state.playState = false;
-    update();
-  }
 }

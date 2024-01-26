@@ -23,16 +23,19 @@ String changeNumber(int number) {
 }
 
 //下载文件
-Future<void> downLoadFile(String url) async {
+Future<bool> downLoadFile(String url) async {
   if (await Permission.storage.request().isGranted) {
     var response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
     final result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
     if (result["isSuccess"] == true) {
       EasyLoading.showToast("下载成功");
+      return true;
     } else {
       EasyLoading.showToast("下载失败,请重试");
+      return false;
     }
   } else {
     EasyLoading.showToast("暂无权限");
+    return false;
   }
 }

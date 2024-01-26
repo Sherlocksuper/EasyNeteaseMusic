@@ -1,20 +1,17 @@
 import 'dart:ui';
-
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/Song.dart';
-import 'package:wyyapp/config.dart';
 import 'logic.dart';
 
 class MusicPlayPage extends StatelessWidget {
-  final Map playItem;
-
-  MusicPlayPage({Key? key, required this.playItem}) : super(key: key);
+  MusicPlayPage({Key? key}) : super(key: key);
 
   final logic = Get.put(MusicPlayLogic());
 
@@ -22,91 +19,94 @@ class MusicPlayPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    state.playState = true;
-    return Padding(
-      padding: EdgeInsets.only(top: MediaQueryData.fromView(View.of(context)).padding.top),
-      child: Material(
-        color: Colors.white,
-        child: Stack(
-          children: [
-            ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Image.network(
-                SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
-                fit: BoxFit.cover,
-                height: Get.height,
-                width: Get.width,
-              ),
-            ),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              appBar: AppBar(
-                leading: IconButton(
-                  onPressed: () async {},
-                  icon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.white),
-                ),
-                centerTitle: true,
-                backgroundColor: Colors.transparent,
-                title: GetBuilder<MusicPlayLogic>(
-                  id: "musicName",
-                  builder: (logic) {
-                    return ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Colors.transparent,
-                            Colors.white,
-                            Colors.white,
-                            Colors.white,
-                            Colors.white,
-                            Colors.transparent
-                          ],
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.dstIn,
-                      child: Container(
-                        width: 200,
-                        alignment: Alignment.center,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Text(
-                                SongManager.musicItemInfo["name"],
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              AutoSizeText(
-                                SongManager.musicItemInfo?["ar"]?[0]?["name"] ??
-                                    SongManager.musicItemInfo?["song"]?["artists"]?[0]?["name"] ??
-                                    "",
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              body: GestureDetector(
-                onTap: () {
-                  state.showDetail = !state.showDetail;
-                  logic.update();
-                },
-                child: Center(
-                  child: GetBuilder<MusicPlayLogic>(
-                    builder: (logic) {
-                      return !logic.state.showDetail ? SongPlay() : SongDetail();
-                    },
+    return GetBuilder<MusicPlayLogic>(
+      builder: (logic) {
+        return Padding(
+          padding: EdgeInsets.only(top: MediaQueryData.fromView(View.of(context)).padding.top),
+          child: Material(
+            color: Colors.red,
+            child: Stack(
+              children: [
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: CachedNetworkImage(
+                    imageUrl: SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
+                    fit: BoxFit.cover,
+                    height: Get.height,
+                    width: Get.width,
                   ),
                 ),
-              ),
+                Scaffold(
+                  backgroundColor: Colors.transparent,
+                  appBar: AppBar(
+                    leading: IconButton(
+                      onPressed: () async {},
+                      icon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.white),
+                    ),
+                    centerTitle: true,
+                    backgroundColor: Colors.transparent,
+                    title: GetBuilder<MusicPlayLogic>(
+                      id: "musicName",
+                      builder: (logic) {
+                        return ShaderMask(
+                          shaderCallback: (Rect bounds) {
+                            return const LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.transparent,
+                                Colors.white,
+                                Colors.white,
+                                Colors.white,
+                                Colors.white,
+                                Colors.transparent
+                              ],
+                            ).createShader(bounds);
+                          },
+                          blendMode: BlendMode.dstIn,
+                          child: Container(
+                            width: 200,
+                            alignment: Alignment.center,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    SongManager.musicItemInfo["name"],
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  AutoSizeText(
+                                    SongManager.musicItemInfo?["ar"]?[0]?["name"] ??
+                                        SongManager.musicItemInfo?["song"]?["artists"]?[0]?["name"] ??
+                                        "",
+                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  body: GestureDetector(
+                    onTap: () {
+                      state.showDetail = !state.showDetail;
+                      logic.update();
+                    },
+                    child: Center(
+                      child: GetBuilder<MusicPlayLogic>(
+                        builder: (logic) {
+                          return !logic.state.showDetail ? SongPlay() : SongDetail();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -135,8 +135,8 @@ class _SongPlayState extends State<SongPlay> {
                 Get.find<MusicPlayLogic>().RController,
               ),
               child: ClipOval(
-                child: Image.network(
-                  SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
+                child: CachedNetworkImage(
+                  imageUrl: SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
                   height: Get.width * 0.8,
                   width: Get.width * 0.8,
                 ),
@@ -154,12 +154,22 @@ class _SongPlayState extends State<SongPlay> {
           ],
         ),
         const Gap(10),
-        ProgressBar(
-          progress: const Duration(seconds: 0),
-          onSeek: (duration) async {},
-          total: const Duration(seconds: 0),
-          baseBarColor: Colors.white,
-          thumbColor: Colors.white,
+        GetBuilder<MusicPlayLogic>(
+          id: "progress",
+          builder: (logic) {
+            return ProgressBar(
+              onSeek: (duration) async {},
+              progress: SongManager.nowProgress,
+              total: SongManager.totalLength,
+              baseBarColor: Colors.white,
+              thumbColor: Colors.white,
+              barHeight: 2,
+              thumbRadius: 5,
+              timeLabelLocation: TimeLabelLocation.below,
+              timeLabelTextStyle: const TextStyle(color: Colors.white),
+              progressBarColor: Colors.white,
+            );
+          },
         ),
         const Gap(10),
         SizedBox(
@@ -167,7 +177,9 @@ class _SongPlayState extends State<SongPlay> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              buildPlayIcon(Icons.autorenew_rounded, () {}),
+              buildPlayIcon(Icons.autorenew_rounded, () {
+                SongManager.resumeMusic();
+              }),
               buildPlayIcon(Icons.skip_previous, () {}),
               GestureDetector(
                 child: Icon(
@@ -178,13 +190,10 @@ class _SongPlayState extends State<SongPlay> {
                     color: Colors.white),
                 onTap: () async {
                   if (SongManager.playerState == PlayerState.playing) {
-                    await SongManager.audioPlayer.pause();
-                    Get.find<MusicPlayLogic>().RController.stop();
+                    SongManager.pauseMusic();
                   } else {
-                    await SongManager.audioPlayer.play(UrlSource(SongManager.musicPlayInfo["url"]));
-                    Get.find<MusicPlayLogic>().RController.repeat();
+                    SongManager.continueMusic();
                   }
-                  Get.find<MusicPlayLogic>().update();
                 },
               ),
               buildPlayIcon(Icons.skip_next, () {}),
@@ -198,7 +207,9 @@ class _SongPlayState extends State<SongPlay> {
 
   Widget buildPlayIcon(IconData iconData, Function onTap) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        onTap();
+      },
       child: Icon(
         iconData,
         size: 30,

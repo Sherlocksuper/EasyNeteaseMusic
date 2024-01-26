@@ -9,9 +9,6 @@ Dio dio = Dio();
 //drawer所在的context
 late BuildContext drawerContext;
 
-//bottomSheet所在的context
-late BuildContext sheetContext;
-
 //全局的baseUrl
 String baseUrl = "https://service-de3fz6q0-1314462060.gz.tencentapigw.com.cn/release";
 

@@ -33,10 +33,11 @@ class TabViewPage extends StatelessWidget {
     );
 
     return Scaffold(
-      body: TabViewContent(),
+      body:TabViewContent(),
     );
   }
 }
+
 
 class TabViewContent extends StatelessWidget {
   TabViewContent({super.key});
@@ -47,7 +48,6 @@ class TabViewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    sheetContext = context;
     return Scaffold(
       drawer: const TotalDrawer(),
       body: PageView(

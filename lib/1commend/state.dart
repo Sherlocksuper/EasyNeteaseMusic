@@ -52,6 +52,8 @@ class CommendState {
 
   //**********************************//
 
+  late BuildContext navigatorContext;
+
   CommendState() {
     ///Initialize variables
   }
