@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -76,6 +78,9 @@ class BasePage extends StatelessWidget {
                       item["creator"]?["nickname"] ??
                       item["album"]?["name"] ??
                       item["creator"]?[0]?["username"] ??
+                      item["ar"]?[0]?["name"] ??
+                      item["trans"] ??
+                      item["signature"] ??
                       "未知",
                   imageUrl: item["picUrl"] ??
                       item["al"]?["picUrl"] ??
@@ -85,6 +90,10 @@ class BasePage extends StatelessWidget {
                       item["coverUrl"],
                   isRound: mapkey == "userprofiles" || mapkey == "artists",
                   type: mapkey,
+                  onTapTile: () {
+                    log("点击了$mapkey的第$index个");
+                    logic.ManageOnClick(mapkey, item);
+                  },
                 );
               },
               separatorBuilder: (BuildContext context, int index) {
@@ -174,7 +183,8 @@ class MusicItem extends StatelessWidget {
               ],
             ),
           ),
-          const Spacer(),
+          if (tail != null) ...tail!,
+          const Gap(10),
         ],
       ),
     );

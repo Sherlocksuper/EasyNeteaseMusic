@@ -1,15 +1,11 @@
-import 'dart:developer';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/play_list_detail/view.dart';
 import 'package:wyyapp/KeepAliveWrapper.dart';
-import '../config.dart';
 import 'logic.dart';
 
 class PlaylistSquarePage extends StatelessWidget {
@@ -83,6 +79,7 @@ class PlaylistPage extends StatelessWidget {
   PlaylistPage({super.key, required this.tag});
 
   final logic = Get.find<PlaylistSquareLogic>();
+
   List playList = [];
   int offset = 0;
 

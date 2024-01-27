@@ -18,8 +18,10 @@ class SearchPage extends StatelessWidget {
       future: Future(() async => {await logic.getSearchDefault(), await logic.getSearchHotList()}),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
           );
         }
         return Scaffold(

@@ -1,10 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/view.dart';
 import 'package:wyyapp/2find/view.dart';
 import 'package:wyyapp/3roam/view.dart';
-import 'package:wyyapp/5my/view.dart';
+import 'package:wyyapp/5my/userpage.dart';
 import 'package:wyyapp/KeepAliveWrapper.dart';
 import 'package:wyyapp/LoginPrefs.dart';
 import 'package:wyyapp/config.dart';
@@ -20,24 +22,33 @@ class TabViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(
-      const Duration(seconds: 1),
-      () async {
-        await LoginPrefs.init();
-        if (LoginPrefs.getCookie() == "null") {
-          FlutterNativeSplash.remove();
-          Get.offAll(() => LoginPage());
+    return FutureBuilder(
+      future: Future(
+        () async => {
+          await LoginPrefs.init(),
+          if (LoginPrefs.getCookie() == "null")
+            {
+              FlutterNativeSplash.remove(),
+              Get.offAll(() => LoginPage()),
+            },
+          dio.options.headers["cookie"] = LoginPrefs.getCookie(),
+          LoginPrefs.userInfo = await LoginPrefs.getMeInfo(),
+          log(LoginPrefs.userInfo.toString()),
+        },
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
-        dio.options.headers["cookie"] = LoginPrefs.getCookie();
+        return Scaffold(
+          body: TabViewContent(),
+        );
       },
-    );
-
-    return Scaffold(
-      body:TabViewContent(),
     );
   }
 }
-
 
 class TabViewContent extends StatelessWidget {
   TabViewContent({super.key});
@@ -61,7 +72,7 @@ class TabViewContent extends StatelessWidget {
           KeepAliveWrapper(child: FindPage()),
           KeepAliveWrapper(child: RoamPage()),
           // DynamicPage(),
-          KeepAliveWrapper(child: MyPage()),
+          KeepAliveWrapper(child: UsePage(userId: LoginPrefs.getUserId(), type: 'user')),
         ],
       ),
       bottomNavigationBar: GetBuilder<TabViewLogic>(

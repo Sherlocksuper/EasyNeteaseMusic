@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/5my/other_user_page/view.dart';
-import 'package:wyyapp/Song.dart';
+import 'package:wyyapp/5my/unregister.dart';
+import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/playlist_square/view.dart';
 import '../../utils.dart';
 import 'logic.dart';
@@ -467,7 +467,7 @@ class DetailShow extends StatelessWidget {
                 //保存封面按钮
                 GestureDetector(
                   onTap: () async {
-                    await downLoadFile(Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"]);
+                    await downLoadImage(Get.find<PlayListDetailLogic>().state.playDetail["coverImgUrl"]);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),

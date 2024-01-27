@@ -5,7 +5,9 @@ class MyState {
     ///Initialize variables
   }
 
-  Map userInfo = {};
+  Map userDetail = {};
+
+  Map totalInfo = {};
 
   Map<String, IconData> iconList = {
     //最近播放

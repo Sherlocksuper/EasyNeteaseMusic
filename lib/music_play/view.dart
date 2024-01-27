@@ -4,10 +4,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/Song.dart';
+import 'package:wyyapp/utils/Song.dart';
 import 'logic.dart';
 
 class MusicPlayPage extends StatelessWidget {
@@ -148,7 +147,9 @@ class _SongPlayState extends State<SongPlay> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             buildPlayIcon(Icons.favorite_border, () {}),
-            buildPlayIcon(Icons.file_download, () {}),
+            buildPlayIcon(Icons.file_download, () {
+              SongManager.downloadSongByUrl();
+            }),
             buildPlayIcon(Icons.comment, () {}),
             buildPlayIcon(Icons.share, () {}),
           ],

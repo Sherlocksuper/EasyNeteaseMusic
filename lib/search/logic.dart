@@ -1,5 +1,10 @@
 import 'dart:developer';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:wyyapp/1commend/play_list_detail/view.dart';
+import 'package:wyyapp/5my/userartist.dart';
+import 'package:wyyapp/5my/userpage.dart';
+import 'package:wyyapp/utils/Song.dart';
 import '../config.dart';
 import 'state.dart';
 
@@ -40,5 +45,39 @@ class SearchLogic extends GetxController {
     var response = await dio.get("$baseUrl/search/suggest?keywords=$keywords&type=mobile");
     state.searchSuggest = response.data["result"]["allMatch"];
     update(["searchSuggest"]);
+  }
+
+  ManageOnClick(String name, var item) {
+    switch (name) {
+      case "songs":
+        log("播放歌曲${item["name"]}，id为${item["id"]}");
+        SongManager.playMusic(item);
+        break;
+      case "albums":
+        Get.toNamed("/album");
+        break;
+      case "artists":
+        log(item["id"].toString());
+        Get.to(() => ArtistPage(userId: item["id"]));
+        break;
+      case "playlists":
+        Get.to(() => PlayListDetailPage(playListId: item["id"]));
+        break;
+      case "userprofiles":
+        log(item.toString());
+        Get.to(() => UsePage(userId: item["userId"], type: 'user'), preventDuplicates: false);
+        break;
+      case "mv":
+        Get.toNamed("/mv");
+        break;
+      case "djRadios":
+        Get.toNamed("/dj");
+        break;
+      case "video":
+        Get.toNamed("/video");
+        break;
+      default:
+        break;
+    }
   }
 }

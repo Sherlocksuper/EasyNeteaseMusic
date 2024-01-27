@@ -23,7 +23,7 @@ String changeNumber(int number) {
 }
 
 //下载文件
-Future<bool> downLoadFile(String url) async {
+Future<bool> downLoadImage(String url) async {
   if (await Permission.storage.request().isGranted) {
     var response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
     final result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));

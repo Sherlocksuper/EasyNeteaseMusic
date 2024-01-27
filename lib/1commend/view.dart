@@ -6,7 +6,8 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/play_list_detail/view.dart' hide SongTile;
-import 'package:wyyapp/Song.dart';
+import 'package:wyyapp/search/result.dart';
+import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/utils.dart';
 import '../config.dart';
 import '../music_play/view.dart';
@@ -219,7 +220,25 @@ class ShowShieldForSong extends StatelessWidget {
                         itemCount: 3,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, itemIndex) {
-                          return SongTile(songItem: source[pageIndex * 3 + itemIndex + 1]);
+                          var songItem = source[pageIndex * 3 + itemIndex];
+                          return MusicItem(
+                            title: songItem["name"] ?? songItem["title"],
+                            subTitle: songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
+                            type: "songs",
+                            imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
+                            isRound: false,
+                            onTapTile: () {
+                              SongManager.playMusic(songItem);
+                            },
+                            tail: [
+                              GestureDetector(
+                                child: const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          );
                         },
                         separatorBuilder: (BuildContext context, int index) {
                           return const Gap(10);
@@ -234,65 +253,6 @@ class ShowShieldForSong extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class SongTile extends StatelessWidget {
-  final Map songItem;
-
-  const SongTile({super.key, required this.songItem});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        SongManager.playMusic(songItem);
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Gap(10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: CachedNetworkImage(
-              imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
-              fit: BoxFit.cover,
-              width: 50,
-              height: 50,
-              fadeInDuration: const Duration(milliseconds: 100),
-            ),
-          ),
-          const Gap(10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  songItem["name"] ?? songItem["title"],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const Gap(5),
-                Text(
-                  songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.play_arrow,
-            color: Colors.grey,
-          ),
-          const Gap(10),
-        ],
-      ),
     );
   }
 }
