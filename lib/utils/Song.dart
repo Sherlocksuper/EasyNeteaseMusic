@@ -152,11 +152,16 @@ class SongManager {
     return response.data["data"][0];
   }
 
-  //通过url下载歌曲，不传url则默认下载当前歌曲
-  static Future<bool> downloadSongByUrl({String? url}) async {
+  //直接下载当前歌曲
+  static Future<bool> downloadCurrentSong() async {
     var result = false;
-    String targetUrl = url ?? musicPlayInfo["url"];
-    result = await FileManager.downLoad("song", musicItemInfo["name"], "mp3", targetUrl);
+
+    Map targetItemInfo = await getMusicDetail(musicItemInfo["id"].toString());
+    Map targetPlayInfo = await getMusicUrl(musicItemInfo["id"].toString());
+
+    String targetUrl = musicPlayInfo["url"];
+    String name = MusicDLInfo(targetItemInfo, targetPlayInfo).getMusicPath();
+    result = await FileManager.downLoad("song", name, "mp3", targetUrl);
     return result;
   }
 
@@ -164,9 +169,12 @@ class SongManager {
   static Future<bool> downloadSongById(String id) async {
     bool result = false;
 
-    String targetUrl = (await getMusicUrl(id))["url"];
-    result = await downloadSongByUrl(url: targetUrl);
+    Map targetItemInfo = await getMusicDetail(id);
+    Map targetPlayInfo = await getMusicUrl(id);
 
+    String targetUrl = (await getMusicUrl(id))["url"];
+    String name = MusicDLInfo(targetItemInfo, targetPlayInfo).getMusicPath();
+    result = await FileManager.downLoad("song", name, "mp3", targetUrl);
     return result;
   }
 
@@ -176,18 +184,44 @@ class SongManager {
     return songList;
   }
 
-  //删除歌曲
   static Future<bool> deleteSong(String path) async {
     return await FileManager.deleteFile(path);
   }
+
+  static Future<Map> getMusicDetail(String id) async {
+    var response = await dio.get("$baseUrl/song/detail?ids=$id");
+    return response.data["songs"][0];
+  }
 }
 
-//当前歌曲质量
-enum MusicQuality {
-  low,
-  medium,
-  high,
-  exhigh,
+class MusicDLInfo {
+  String musicName = "";
+  String musicAuthor = "";
+  String musicDesc = "";
+  String musicBitrate = "";
+
+  //初始化的时候要传入item和play
+  MusicDLInfo(Map itemInfo, Map playInfo) {
+    log(itemInfo.toString());
+    musicName = itemInfo["name"] ?? "名称未知";
+    musicAuthor = (itemInfo["song"]?["artists"] ?? itemInfo["ar"] as List).map((e) => e["name"]).toList().join(" ");
+    musicDesc = itemInfo["alias"]?.toString() ?? "暂无描述";
+    musicBitrate = playInfo["br"].toString();
+  }
+
+  //fromString
+  MusicDLInfo.fromString(String path) {
+    List<String> pathList = path.split(" ");
+    musicName = pathList[0];
+    musicAuthor = pathList[1];
+    musicDesc = pathList[2];
+    musicBitrate = pathList[3];
+  }
+
+  //下载的时候返回拼接的String
+  String getMusicPath() {
+    return "$musicName & $musicAuthor & $musicDesc & $musicBitrate";
+  }
 }
 
 //playInfo  其余在musicItemInfo

@@ -28,10 +28,8 @@ class SearchLogic extends GetxController {
     String keywords = state.searchKeyword == "" ? state.searchDefault : state.searchKeyword;
     state.searchKeyword = keywords;
     int type = state.searchTypes[key]!.type;
-
     var response = await dio.get("$baseUrl/cloudsearch?keywords=$keywords&type=$type");
     state.searchTypes[key]!.result = response.data["result"][key];
-
     update(["searchResult"]);
   }
 

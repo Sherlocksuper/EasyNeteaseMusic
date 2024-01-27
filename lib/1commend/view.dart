@@ -224,7 +224,6 @@ class ShowShieldForSong extends StatelessWidget {
                           return MusicItem(
                             title: songItem["name"] ?? songItem["title"],
                             subTitle: songItem["song"]["artists"][0]["name"] ?? songItem["artists"][0]["name"],
-                            type: "songs",
                             imageUrl: songItem["picUrl"] ?? songItem["album"]["picUrl"],
                             isRound: false,
                             onTapTile: () {

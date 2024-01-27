@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:wyyapp/tab_view/drawer/state.dart';
+
+import 'logic.dart';
 
 class TotalDrawer extends Drawer {
-  const TotalDrawer({super.key});
+  final logic = Get.put(CommandDrawerLogic());
+  final state = Get
+      .find<CommandDrawerLogic>()
+      .state;
+
+  TotalDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -101,46 +109,14 @@ class TotalDrawer extends Drawer {
                 ),
               ),
               const Gap(10),
-              buildDrawerContainer(
-                [
-                  buildDrawerTile("我的消息", () {}, Icons.email_outlined),
-                  buildDrawerTile("会员中心", () {}, Icons.verified_user_outlined)
-                ],
-              ),
-              const Gap(15),
-              buildDrawerContainer(
-                title: "音乐服务",
-                [
-                  buildDrawerTile("趣测", () {}, Icons.emoji_objects_outlined),
-                  buildDrawerTile("云村有票", () {}, Icons.emoji_objects_outlined),
-                  buildDrawerTile("商城", () {}, Icons.shopping_bag_outlined),
-                  buildDrawerTile("Beat专区", () {}, Icons.music_note_outlined),
-                  buildDrawerTile("音乐收藏家", () {}, Icons.music_note_outlined),
-                  buildDrawerTile("视频彩铃", () {}, Icons.video_collection_outlined),
-                ],
-              ),
-              const Gap(15),
-              buildDrawerContainer(
-                title: "其他",
-                [
-                  buildDrawerTile("设置", () {}, Icons.settings_outlined),
-                  buildDrawerTile("深色模式", () {}, Icons.nights_stay_outlined),
-                  buildDrawerTile("定时关闭", () {}, Icons.timer_outlined),
-                  buildDrawerTile("个性装扮", () {}, Icons.emoji_objects_outlined),
-                  buildDrawerTile("边听边存", () {}, Icons.download_outlined),
-                  buildDrawerTile("在线听歌免流量", () {}, Icons.wifi_outlined),
-                  buildDrawerTile("音乐黑名单", () {}, Icons.music_note_outlined),
-                  buildDrawerTile("青少年模式", () {}, Icons.child_care_outlined),
-                  buildDrawerTile("音乐闹钟", () {}, Icons.alarm_outlined),
-                ],
-              ),
-              const Gap(15),
-              buildDrawerContainer(
-                title: "我的小程序",
-                [
-                  buildDrawerTile("我的小程序", () {}, Icons.apps_outlined),
-                ],
-              ),
+              EachTypeCard(title: "我的", type: FunctionType.me, children: state.functionList),
+              const Gap(10),
+              EachTypeCard(title: "音乐服务", type: FunctionType.service, children: state.functionList),
+              const Gap(10),
+              EachTypeCard(title: "其他", type: FunctionType.other, children: state.functionList),
+              const Gap(10),
+              EachTypeCard(title: "我的程序", type: FunctionType.myApp, children: state.functionList),
+              const Gap(10),
             ],
           ),
         ),
@@ -149,62 +125,60 @@ class TotalDrawer extends Drawer {
   }
 }
 
-Widget buildDrawerTile(String title, Function onTap, IconData iconData, {String? hintText}) {
-  return GestureDetector(
-    onTap: () {
-      onTap();
-    },
-    child: SizedBox(
-      height: 30,
-      child: Row(
-        children: [
-          Icon(iconData, color: Colors.black, size: 20),
-          const Gap(10),
-          Text(title, style: const TextStyle(fontSize: 18)),
-          const Spacer(),
-          const Icon(
-            Icons.arrow_forward_ios_sharp,
-            color: Colors.grey,
-            size: 16,
-          ),
-        ],
+class EachTypeCard extends StatelessWidget {
+  final String title;
+  final FunctionType type;
+  final List<FunctionItem> children;
+
+  const EachTypeCard({super.key, required this.title, required this.type, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final source = children.where((element) => element.type == type).toList();
+
+    return Card(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(15)),
       ),
-    ),
-  );
-}
-
-Widget buildDrawerContainer(List<Widget> children, {String? title}) {
-  return Container(
-    padding: const EdgeInsets.all(10),
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    ),
-    child: Column(
-      children: [
-        if (title != null)
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(top: 5, bottom: 5),
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ),
-
-        //每个子项中间加一个分割线,最后一个不加
-        ...List.generate(
-          children.length,
-          (index) {
-            return Column(
-              children: [
-                const Divider(),
-                children[index],
-              ],
-            );
-          },
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(15)),
         ),
-      ],
-    ),
-  );
+        padding: const EdgeInsets.only(top: 15, bottom: 15, left: 10, right: 5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            ListView.separated(
+              //只返回和type相同的
+              itemBuilder: (context, index) =>
+                  Row(
+                    children: [
+                      Icon(source[index].icon),
+                      const Gap(10),
+                      Text(source[index].title),
+                      const Spacer(),
+                    ],
+                  ),
+              itemCount: source.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(
+                  color: Colors.grey[200],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

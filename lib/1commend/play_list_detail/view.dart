@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/5my/unregister.dart';
+import 'package:wyyapp/5my/userpage.dart';
 import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/playlist_square/view.dart';
 import '../../utils.dart';
@@ -181,9 +181,7 @@ class PlayHeader extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       Get.to(
-                        () => OtherUserPagePage(
-                          userId: Get.find<PlayListDetailLogic>().state.creator["userId"] ?? 0,
-                        ),
+                        () => UsePage(userId: Get.find<PlayListDetailLogic>().state.creator["userId"], type: 'user'),
                       );
                     },
                     child: Row(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/5my/download/view.dart';
+import 'package:wyyapp/5my/state.dart';
 import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/config.dart';
 import 'logic.dart';
@@ -140,8 +141,7 @@ class SelfPage extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () async {
-                    },
+                    onTap: () async {},
                     child: Text(
                       userInfo["profile"]["nickname"],
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
@@ -197,22 +197,19 @@ class SelfPage extends StatelessWidget {
               crossAxisSpacing: 10,
               childAspectRatio: 1,
             ),
-            itemCount: Get.find<MyLogic>().state.iconList.length,
+            itemCount: Get.find<MyLogic>().state.functionList.length,
             itemBuilder: (context, index) {
+              FunctionItem item = Get.find<MyLogic>().state.functionList[index];
               return GestureDetector(
                 onTap: () async {
-                  Get.to(()=>DownloadPage());
+                  item.onTap();
                 },
                 child: Column(
                   children: [
-                    Icon(
-                      Get.find<MyLogic>().state.iconList.values.toList()[index],
-                      size: 30,
-                      color: Colors.red,
-                    ),
+                    Icon(item.icon, size: 30, color: Colors.red),
                     const Gap(10),
                     AutoSizeText(
-                      Get.find<MyLogic>().state.iconList.keys.toList()[index],
+                      item.title,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                     ),
                   ],

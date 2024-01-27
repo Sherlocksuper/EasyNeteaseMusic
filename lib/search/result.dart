@@ -82,14 +82,14 @@ class BasePage extends StatelessWidget {
                       item["trans"] ??
                       item["signature"] ??
                       "未知",
-                  imageUrl: item["picUrl"] ??
+                  imageUrl: item["img1v1Url"] ??
+                      item["picUrl"] ??
                       item["al"]?["picUrl"] ??
                       item["coverImgUrl"] ??
                       item["avatarUrl"] ??
-                      item["cover"] ??
+                      item["avatar"] ??
                       item["coverUrl"],
                   isRound: mapkey == "userprofiles" || mapkey == "artists",
-                  type: mapkey,
                   onTapTile: () {
                     log("点击了$mapkey的第$index个");
                     logic.ManageOnClick(mapkey, item);
@@ -124,7 +124,6 @@ class MusicItem extends StatelessWidget {
 
   //传入一个type ,key值，songs之类的
   //用type来处理点击时间
-  final String type;
 
   const MusicItem({
     super.key,
@@ -134,7 +133,6 @@ class MusicItem extends StatelessWidget {
     this.isRound,
     this.onTapTile,
     this.tail,
-    required this.type,
   });
 
   @override

@@ -148,7 +148,7 @@ class _SongPlayState extends State<SongPlay> {
           children: [
             buildPlayIcon(Icons.favorite_border, () {}),
             buildPlayIcon(Icons.file_download, () {
-              SongManager.downloadSongByUrl();
+              SongManager.downloadCurrentSong();
             }),
             buildPlayIcon(Icons.comment, () {}),
             buildPlayIcon(Icons.share, () {}),

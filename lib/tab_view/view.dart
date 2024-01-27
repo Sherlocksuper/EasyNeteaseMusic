@@ -60,7 +60,7 @@ class TabViewContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const TotalDrawer(),
+      drawer:  TotalDrawer(),
       body: PageView(
         controller: state.pageController,
         physics: const NeverScrollableScrollPhysics(),

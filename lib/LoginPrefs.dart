@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config.dart';
+import 'login/view.dart';
 
 class LoginPrefs {
   //user 0 , cookie null , role null
@@ -54,5 +57,21 @@ class LoginPrefs {
   static Future<Map> getMeInfo() async {
     var response = await dio.get("$baseUrl/user/detail?uid=${LoginPrefs.getUserId()}");
     return response.data;
+  }
+
+  //退出登录
+  static Future<void> logout() async {
+    LoginPrefs.clear();
+    Get.offAll(() => LoginPage());
+  }
+
+  static void showAppData() async {
+    Get.defaultDialog(
+      title: "AppData",
+      content: const Text(
+          //app制作者、联系方式、版本号、更新时间、更新内容
+          "制作者：sherloc  lby\n"
+          "联系方式：qq1785648438\n"),
+    );
   }
 }
