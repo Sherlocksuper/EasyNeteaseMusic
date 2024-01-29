@@ -25,10 +25,8 @@ class SearchPage extends StatelessWidget {
           );
         }
         return Scaffold(
-          backgroundColor: defaultColor,
           appBar: AppBar(
             toolbarHeight: 40,
-            backgroundColor: defaultColor,
             title: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40),

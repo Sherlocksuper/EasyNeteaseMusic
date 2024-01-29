@@ -1,16 +1,14 @@
 import 'dart:developer';
-import 'dart:io';
+import 'dart:html';
+import 'dart:math' hide log;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:path_provider/path_provider.dart';
-import 'package:wyyapp/utils.dart';
 import 'package:wyyapp/utils/FileManager.dart';
 import '../LoginPrefs.dart';
 import '../config.dart';
 import '../music_play/logic.dart';
 import '../music_play/view.dart';
-import 'package:dio/dio.dart';
 
 class SongManager {
   //歌曲队列
@@ -27,8 +25,14 @@ class SongManager {
   static Duration totalLength = Duration();
   static PlayerState playerState = PlayerState.stopped;
 
-  //五个state，分别是stopped, playing, paused, completed, disposed
+  //音乐模式 循环播放、顺序播放、随机播放
+  static PlayMode playMode = PlayMode.order;
+
+  //预备播放歌曲列表 ,存取音乐item
+  static List<Map> songListToPlay = [];
+
   //初始化监听器
+  //五个state，分别是stopped, playing, paused, completed, disposed
   static initSongModule() {
     audioPlayer.onPositionChanged.listen((event) {
       log(event.toString());
@@ -39,7 +43,7 @@ class SongManager {
     audioPlayer.onDurationChanged.listen((Duration d) {});
 
     audioPlayer.onPlayerComplete.listen((event) {
-      audioPlayer.play(UrlSource(musicPlayInfo["url"]));
+      playMode == PlayMode.loop ? resumeMusic() : playNextMusic();
     });
 
     //当播放状态改变的时候
@@ -61,15 +65,20 @@ class SongManager {
     hasInit = true;
   }
 
+  //**************基础播放操作***************** */
+
   //播放
   static Future<void> playMusic(Map musicItem) async {
     if (!hasInit) {
       initSongModule();
     }
-    //如果音乐相同，不做处理
+
+    //如果musicItem不在预备播放列表里面，就添加进去
+    if (!songListToPlay.contains(musicItem)) {
+      addSongToPreparePlayList(musicItem);
+    }
 
     musicItemInfo = musicItem;
-
     Get.bottomSheet(
       SizedBox(
         height: Get.height,
@@ -77,18 +86,17 @@ class SongManager {
       ),
       isScrollControlled: true,
     );
-
     //获取了当前音乐的info，包括url
     musicPlayInfo = await getMusicUrl(musicItemInfo["id"].toString());
+
     //开始播放
     await audioPlayer.play(UrlSource(musicPlayInfo["url"]));
-
+    //获取总时长
     totalLength = (await audioPlayer.getDuration())!;
     //正在播放
     playerState = PlayerState.playing;
-
+    //刷新
     Get.find<MusicPlayLogic>().RController.repeat();
-
     Get.find<MusicPlayLogic>().update();
   }
 
@@ -123,6 +131,28 @@ class SongManager {
     //刷新
     Get.find<MusicPlayLogic>().update();
   }
+
+  //播放下一首歌
+  static Future<void> playNextMusic() async {
+    if (!hasInit) {
+      initSongModule();
+    }
+    //如果是随机播放
+
+    if (playMode == PlayMode.random) {
+      int index = Random().nextInt(songListToPlay.length);
+      await playMusic(songListToPlay[index]);
+    } else {
+      int index = songListToPlay.indexOf(musicItemInfo);
+      if (index == songListToPlay.length - 1) {
+        await playMusic(songListToPlay[0]);
+      } else {
+        await playMusic(songListToPlay[index + 1]);
+      }
+    }
+  }
+
+  //**************操作数据***************** */
 
   //清空数据
   static void clearData() {
@@ -184,13 +214,27 @@ class SongManager {
     return songList;
   }
 
+  //删除歌曲
   static Future<bool> deleteSong(String path) async {
     return await FileManager.deleteFile(path);
   }
 
+  //获取歌曲详情
   static Future<Map> getMusicDetail(String id) async {
     var response = await dio.get("$baseUrl/song/detail?ids=$id");
     return response.data["songs"][0];
+  }
+
+  //**************操作列表***************** */
+
+  //添加歌曲到预备播放列表
+  static void addSongToPreparePlayList(Map musicItem) {
+    songListToPlay.add(musicItem);
+  }
+
+  //把歌曲从预备播放列表移除
+  static void removeSongFromPreparePlayList(Map musicItem) {
+    songListToPlay.remove(musicItem);
   }
 }
 
@@ -240,3 +284,10 @@ class MusicDLInfo {
 // company: 网易·云上 X 网易音乐人, briefDesc: , artist: {name: , id: 0, picId: 0, img1v1Id: 0, briefDesc: , picUrl: , img1v1Url: http://p4.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg, albumSize: 0,
 // alias: [], trans: , musicSize: 0, topicPerson: 0}, songs: [], alias: [仙剑六影视剧《祈今朝》独爱片尾主题曲], status: 1, copyrightId: -1, commentThreadId: R_AL_3_183332158, artists: [{name: 周深, id: 1030001, picId: 0,
 // img1v1Id: 0, briefDesc: , picUrl: , img1v1Url: http://p3.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg, albumSize: 0, alias: [], trans: , musicSize: 0, topicPerson: 0}], subType: 录音室版, transName: null, onSale: false, mark: 0, gapless: 0, picId_str: 109951169282470776}, starred: false, popularity: 100, score: 100, starredNum: 0, duration: 215463, playedNum: 0, dayPlays: 0, hearTime: 0, sqMusic: {name: null, id: 8789524643, size: 22595730, extension: flac, sr: 48000, dfsId: 0, bitrate: 838962, playTime: 215463, volumeDelta: -9006}, hrMusic: {name: null, id: 8789524642, size: 43306703, extension: flac, sr: 48000, dfsId: 0, bitrate: 1607944, playTime: 215463, volumeDelta: -8912}, ringtone: , crbt: null, audition: null, copyFrom: , commentThreadId: R_SO_4_2117905342, rtUrl:
+
+//循环、顺序、随机
+enum PlayMode {
+  loop,
+  order,
+  random,
+}

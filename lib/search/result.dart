@@ -25,7 +25,6 @@ class SearchResultPage extends StatelessWidget {
           isScrollable: true,
           indicatorColor: Colors.red,
           labelColor: Colors.red,
-          unselectedLabelColor: Colors.black,
           tabs: [
             for (var key in state.searchTypes.keys)
               Tab(
@@ -108,13 +107,18 @@ class BasePage extends StatelessWidget {
 }
 
 class MusicItem extends StatelessWidget {
+  //头部widget
+  final Widget? head;
+
   //左侧图片
   final String? imageUrl;
   final bool? isRound;
 
   //标题和副标题
   final String title;
+  final String? titleExtend;
   final String subTitle;
+  final String? subTitleExtend;
 
   //点击事件
   final Function? onTapTile;
@@ -133,6 +137,9 @@ class MusicItem extends StatelessWidget {
     this.isRound,
     this.onTapTile,
     this.tail,
+    this.titleExtend,
+    this.subTitleExtend,
+    this.head,
   });
 
   @override
@@ -145,7 +152,9 @@ class MusicItem extends StatelessWidget {
       },
       child: Row(
         children: [
-          //如果imageUrl不为空，则显示图片
+          if (head != null) const Gap(10),
+          if (head != null) head!,
+          const Gap(10),
           if (imageUrl != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(isRound == true ? 50 : 5),
@@ -160,24 +169,41 @@ class MusicItem extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (title != null)
-                  AutoSizeText(
-                    title!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
+                RichText(
+                  maxLines: 1,
+                  text: TextSpan(
+                    children: [
+                      WidgetSpan(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
+                      if (titleExtend != null)
+                        TextSpan(
+                          text: titleExtend,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
                   ),
-                if (subTitle != null)
-                  AutoSizeText(
-                    subTitle!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                ),
+                AutoSizeText(
+                  subTitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),

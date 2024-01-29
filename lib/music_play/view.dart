@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/utils/Song.dart';
+import '../search/result.dart';
 import 'logic.dart';
 
 class MusicPlayPage extends StatelessWidget {
@@ -198,7 +199,47 @@ class _SongPlayState extends State<SongPlay> {
                 },
               ),
               buildPlayIcon(Icons.skip_next, () {}),
-              buildPlayIcon(Icons.playlist_play, () {}),
+              buildPlayIcon(Icons.playlist_play, () {
+                //弹出弹窗，展示播放列表
+                Get.bottomSheet(
+                  Container(
+                    height: Get.height * 0.5,
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        const Gap(10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            const Text("播放列表"),
+                            IconButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                        const Gap(10),
+                        Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              Map item = SongManager.songListToPlay[index];
+                              return MusicItem(
+                                title: item["name"],
+                                subTitle: item["ar"][0]["name"],
+                                imageUrl: item["al"]["picUrl"],
+                              );
+                            },
+                            itemCount: SongManager.songListToPlay.length,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         )

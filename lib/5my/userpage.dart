@@ -1,12 +1,13 @@
+import 'dart:developer';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/5my/download/view.dart';
 import 'package:wyyapp/5my/state.dart';
-import 'package:wyyapp/utils/Song.dart';
-import 'package:wyyapp/config.dart';
+import 'package:wyyapp/LoginPrefs.dart';
+import '../config.dart';
 import 'logic.dart';
 
 Map userInfo = {};
@@ -15,76 +16,54 @@ class UsePage extends StatelessWidget {
   final logic = Get.put(MyLogic());
   final state = Get.find<MyLogic>().state;
 
-  final int userId;
-  final String type;
-
-  UsePage({
-    super.key,
-    required this.userId,
-    required this.type,
-  });
+  UsePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Future(
-        () async => {
-          userInfo = await logic.getUserDetail(userId),
-        },
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        return Scaffold(
-          backgroundColor: defaultColor,
-          body: NestedScrollView(
-            physics: const BouncingScrollPhysics(),
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScroll) {
-              return <Widget>[
-                SliverLayoutBuilder(
-                  builder: (BuildContext context, constraints) {
-                    return SliverAppBar(
-                      toolbarHeight: 40,
-                      stretch: true,
-                      stretchTriggerOffset: 50,
-                      backgroundColor: Colors.transparent,
-                      leading: IconButton(
-                        onPressed: () async {
-                          Scaffold.of(drawerContext).openDrawer();
-                        },
-                        icon: const Icon(Icons.menu, color: Colors.black),
+    userInfo = LoginPrefs.userInfo;
+    return Scaffold(
+      body: NestedScrollView(
+        physics: const BouncingScrollPhysics(),
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScroll) {
+          return <Widget>[
+            SliverLayoutBuilder(
+              builder: (BuildContext context, constraints) {
+                return SliverAppBar(
+                  toolbarHeight: 40,
+                  stretch: true,
+                  stretchTriggerOffset: 50,
+                  backgroundColor: Colors.transparent,
+                  leading: GestureDetector(
+                    onTap: () {
+                      Scaffold.of(drawerContext).openDrawer();
+                    },
+                    child: const Icon(
+                      Icons.menu,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      onPressed: () async {
+                        // await logic.logout();
+                        // await logic.getCountInfo();
+                      },
+                      icon: const Icon(
+                        Icons.search_outlined,
                       ),
-                      actions: [
-                        IconButton(
-                          onPressed: () async {
-                            await logic.logout();
-                            // await logic.getCountInfo();
-                          },
-                          icon: const Icon(
-                            Icons.search_outlined,
-                          ),
-                        ),
-                      ],
-                      pinned: true,
-                      floating: false,
-                      iconTheme: const IconThemeData(
-                        color: Colors.black,
-                      ),
-                    );
-                  },
-                ),
-              ];
-            },
-            body: const SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Padding(padding: EdgeInsets.only(top: 20, right: 20, left: 20), child: SelfPage()),
+                    ),
+                  ],
+                  pinned: true,
+                  floating: false,
+                );
+              },
             ),
-          ),
-        );
-      },
+          ];
+        },
+        body: const SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Padding(padding: EdgeInsets.only(top: 20, right: 20, left: 20), child: SelfPage()),
+        ),
+      ),
     );
   }
 }
@@ -102,25 +81,18 @@ class SelfPage extends StatelessWidget {
           children: [
             Column(
               children: [
-                Container(
+                SizedBox(
                   height: radius,
                   width: double.infinity,
-                  color: Colors.transparent,
                 ),
-                Container(
-                  height: radius * 3,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        blurRadius: 10,
-                        offset: const Offset(0, 3), // changes position of shadow
-                      ),
-                    ],
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 5,
+                  child: SizedBox(
+                    height: radius * 3,
+                    width: double.infinity,
                   ),
                 ),
               ],
@@ -172,21 +144,11 @@ class SelfPage extends StatelessWidget {
           ],
         ),
         const Gap(20),
-        Container(
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-          width: Get.height,
-          decoration: BoxDecoration(
-            color: Colors.white,
+        Card(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: const Offset(0, 3), // changes position of shadow
-              ),
-            ],
           ),
+          elevation: 5,
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,

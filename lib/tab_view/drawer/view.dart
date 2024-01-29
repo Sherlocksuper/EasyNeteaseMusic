@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -7,9 +9,7 @@ import 'logic.dart';
 
 class TotalDrawer extends Drawer {
   final logic = Get.put(CommandDrawerLogic());
-  final state = Get
-      .find<CommandDrawerLogic>()
-      .state;
+  final state = Get.find<CommandDrawerLogic>().state;
 
   TotalDrawer({super.key});
 
@@ -37,7 +37,7 @@ class TotalDrawer extends Drawer {
                     onTap: () {},
                     child: const Text(
                       "立即登录",
-                      style: TextStyle(fontSize: 18, color: Colors.black),
+                      style: TextStyle(fontSize: 18),
                     ),
                   ),
                   const Icon(
@@ -110,8 +110,8 @@ class TotalDrawer extends Drawer {
               ),
               const Gap(10),
               EachTypeCard(title: "我的", type: FunctionType.me, children: state.functionList),
-              const Gap(10),
-              EachTypeCard(title: "音乐服务", type: FunctionType.service, children: state.functionList),
+              // const Gap(10),
+              // EachTypeCard(title: "音乐服务", type: FunctionType.service, children: state.functionList),
               const Gap(10),
               EachTypeCard(title: "其他", type: FunctionType.other, children: state.functionList),
               const Gap(10),
@@ -142,7 +142,6 @@ class EachTypeCard extends StatelessWidget {
       ),
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(15)),
         ),
         padding: const EdgeInsets.only(top: 15, bottom: 15, left: 10, right: 5),
@@ -158,15 +157,20 @@ class EachTypeCard extends StatelessWidget {
             ),
             ListView.separated(
               //只返回和type相同的
-              itemBuilder: (context, index) =>
-                  Row(
-                    children: [
-                      Icon(source[index].icon),
-                      const Gap(10),
-                      Text(source[index].title),
-                      const Spacer(),
-                    ],
-                  ),
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () {
+                  log("message");
+                  source[index].onTap();
+                },
+                child: Row(
+                  children: [
+                    Icon(source[index].icon),
+                    const Gap(10),
+                    Text(source[index].title),
+                    const Spacer(),
+                  ],
+                ),
+              ),
               itemCount: source.length,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),

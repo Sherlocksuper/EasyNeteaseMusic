@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/view.dart';
-import 'package:wyyapp/2find/view.dart';
-import 'package:wyyapp/3roam/view.dart';
 import 'package:wyyapp/5my/userpage.dart';
 import 'package:wyyapp/KeepAliveWrapper.dart';
 import 'package:wyyapp/LoginPrefs.dart';
@@ -57,10 +55,12 @@ class TabViewContent extends StatelessWidget {
   final logic = Get.find<TabViewLogic>();
   final state = Get.find<TabViewLogic>().state;
 
+  int currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer:  TotalDrawer(),
+      drawer: TotalDrawer(),
       body: PageView(
         controller: state.pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -69,18 +69,18 @@ class TabViewContent extends StatelessWidget {
         },
         children: [
           KeepAliveWrapper(child: CommendPage()),
-          KeepAliveWrapper(child: FindPage()),
-          KeepAliveWrapper(child: RoamPage()),
+          KeepAliveWrapper(child: UsePage()),
+          // KeepAliveWrapper(child: FindPage()),
+          // KeepAliveWrapper(child: RoamPage()),
           // DynamicPage(),
-          KeepAliveWrapper(child: UsePage(userId: LoginPrefs.getUserId(), type: 'user')),
         ],
       ),
       bottomNavigationBar: GetBuilder<TabViewLogic>(
         builder: (logic) {
           return BottomNavigationBar(
-            currentIndex: state.currentIndex,
+            currentIndex: currentIndex,
             onTap: (index) {
-              state.currentIndex = index;
+              currentIndex = index;
               state.pageController.jumpToPage(index);
               logic.update();
             },
@@ -90,15 +90,15 @@ class TabViewContent extends StatelessWidget {
                 icon: Icon(Icons.home),
                 label: "推荐",
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined),
-                label: "发现",
-              ),
-              BottomNavigationBarItem(
-                //收音机
-                icon: Icon(Icons.radio_outlined),
-                label: "漫游",
-              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.explore_outlined),
+              //   label: "发现",
+              // ),
+              // BottomNavigationBarItem(
+              //   收音机
+              // icon: Icon(Icons.radio_outlined),
+              // label: "漫游",
+              // ),
               // BottomNavigationBarItem(
               //   //微信chat
               //   icon: Icon(Icons.chat_outlined),

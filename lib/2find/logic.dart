@@ -8,9 +8,4 @@ import 'state.dart';
 class FindLogic extends GetxController {
   final FindState state = FindState();
 
-  //https://music.163.com/song?id=29436904
-  Future getBanner() async {
-    LoginPrefs.clear();
-    Get.offAll(() => LoginPage());
-  }
 }

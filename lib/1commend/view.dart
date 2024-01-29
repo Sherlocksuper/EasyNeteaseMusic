@@ -8,9 +8,7 @@ import 'package:get/get.dart';
 import 'package:wyyapp/1commend/play_list_detail/view.dart' hide SongTile;
 import 'package:wyyapp/search/result.dart';
 import 'package:wyyapp/utils/Song.dart';
-import 'package:wyyapp/utils.dart';
 import '../config.dart';
-import '../music_play/view.dart';
 import '../search/view.dart';
 import 'logic.dart';
 
@@ -22,6 +20,7 @@ class CommendPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    drawerContext = context;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 50,
@@ -31,7 +30,6 @@ class CommendPage extends StatelessWidget {
           },
           child: const Icon(
             Icons.menu,
-            color: Colors.black,
           ),
         ),
         title: GestureDetector(
@@ -71,24 +69,21 @@ class CommendPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Container(
-        color: Colors.white,
-        child: CustomMaterialIndicator(
-          child: const SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: CommandContent(),
-          ),
-          onRefresh: () async {
-            await logic.toRefresh();
-          },
-          indicatorBuilder: (context, controller) {
-            return const Icon(
-              Icons.ac_unit,
-              color: Colors.red,
-              size: 30,
-            );
-          },
+      body: CustomMaterialIndicator(
+        child: const SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: CommandContent(),
         ),
+        onRefresh: () async {
+          await logic.toRefresh();
+        },
+        indicatorBuilder: (context, controller) {
+          return const Icon(
+            Icons.ac_unit,
+            color: Colors.red,
+            size: 30,
+          );
+        },
       ),
     );
   }
@@ -107,33 +102,36 @@ class CommandContent extends StatelessWidget {
         },
       ),
       builder: (context, snapshot) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.max,
+        return GetBuilder<CommendLogic>(
+          builder: (logic) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Gap(10),
-                Text(
-                  //按照时间
-                  DateTime.now().hour < 12
-                      ? "早上好"
-                      : DateTime.now().hour < 18
-                          ? "下午好"
-                          : "晚上好",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    const Gap(10),
+                    Text(
+                      //按照时间
+                      DateTime.now().hour < 12
+                          ? "早上好"
+                          : DateTime.now().hour < 18
+                              ? "下午好"
+                              : "晚上好",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
+                for (var item in Get.find<CommendLogic>().state.functionsMap.entries)
+                  item.value.type == "card"
+                      ? ShowShieldForCard(title: item.value.title, source: item.value.list)
+                      : ShowShieldForSong(title: item.value.title, source: item.value.list)
               ],
-            ),
-            ShowShieldForCard(title: "推荐歌单", source: Get.find<CommendLogic>().state.commandPlayList),
-            ShowShieldForSong(title: "新歌推荐", source: Get.find<CommendLogic>().state.newSongList),
-            ShowShieldForCard(title: "排行榜", source: Get.find<CommendLogic>().state.selectTopList),
-            ShowShieldForCard(title: "心情歌单", source: Get.find<CommendLogic>().state.moodPlayList),
-            ShowShieldForCard(title: "场景歌单", source: Get.find<CommendLogic>().state.scenePlayList),
-          ],
+            );
+          },
         );
       },
     );
@@ -152,37 +150,33 @@ class ShowShieldForCard extends StatelessWidget {
     if (source.isEmpty) {
       return const SizedBox();
     }
-    return GetBuilder<CommendLogic>(
-      builder: (logic) {
-        return Column(
-          children: [
-            const Gap(20),
-            SubTitle(title: title, onTap: onTap),
-            const Gap(15),
-            SizedBox(
-              height: 170,
-              width: Get.width,
-              child: ListView.separated(
-                primary: true,
-                shrinkWrap: true,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  return PlaylistsCard(
-                    playItem: source[index],
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return const Gap(10);
-                },
-                itemCount: source.length,
-              ),
-            ),
-            const Gap(10),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        const Gap(20),
+        SubTitle(title: title, onTap: onTap),
+        const Gap(15),
+        SizedBox(
+          height: 170,
+          width: Get.width,
+          child: ListView.separated(
+            primary: true,
+            shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              return PlaylistsCard(
+                playItem: source[index],
+              );
+            },
+            separatorBuilder: (context, index) {
+              return const Gap(10);
+            },
+            itemCount: source.length,
+          ),
+        ),
+        const Gap(10),
+      ],
     );
   }
 }
@@ -339,18 +333,6 @@ class SubTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        GestureDetector(
-          onTap: () {
-            onTap!();
-          },
-          child: const Icon(
-            //三个点
-            Icons.more_vert_sharp,
-            size: 16,
-            color: Colors.grey,
-          ),
-        ),
-        const Gap(10),
       ],
     );
   }

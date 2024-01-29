@@ -21,9 +21,9 @@ class RecentlyPlayPage extends StatelessWidget {
           title: const Text("最近播放"),
           bottom: TabBar(
             tabs: state.typeList.map((e) => Tab(text: e.name)).toList(),
-            labelColor: Colors.black,
             unselectedLabelColor: Colors.grey,
             indicatorColor: Colors.red,
+            labelColor: Colors.red,
           ),
         ),
         body: TabBarView(

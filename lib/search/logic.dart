@@ -25,6 +25,7 @@ class SearchLogic extends GetxController {
 
   //搜索 通过type获取搜索结果
   Future<void> getSearchResult(String key) async {
+    log("搜索关键词：${state.searchKeyword}");
     String keywords = state.searchKeyword == "" ? state.searchDefault : state.searchKeyword;
     state.searchKeyword = keywords;
     int type = state.searchTypes[key]!.type;
@@ -63,7 +64,7 @@ class SearchLogic extends GetxController {
         break;
       case "userprofiles":
         log(item.toString());
-        Get.to(() => UsePage(userId: item["userId"], type: 'user'), preventDuplicates: false);
+        // Get.to(() => UsePage(userId: item["userId"], type: 'user'), preventDuplicates: false);
         break;
       case "mv":
         Get.toNamed("/mv");

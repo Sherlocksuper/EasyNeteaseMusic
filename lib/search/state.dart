@@ -28,6 +28,7 @@ class SearchState {
   SearchState() {
     ///Initialize variables
   }
+
 }
 
 class SearchType {

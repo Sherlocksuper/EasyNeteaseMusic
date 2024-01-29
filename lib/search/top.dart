@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:wyyapp/search/result.dart';
 
 import 'logic.dart';
 
@@ -85,12 +88,18 @@ class SearchPlacard extends StatelessWidget {
       offset: Offset(-(initOffset - 20) + index * 2 * (initOffset - 20) / 5, 0),
       child: Material(
         borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
         child: ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           itemBuilder: (context, index) {
-            return searchItem(list[index], index);
+            return GestureDetector(
+                onTap: () {
+                  //设置搜索词
+                  state.searchKeyword = list[index]["searchWord"];
+                  log("搜索词：${state.searchKeyword}");
+                  Get.to(() => const SearchResultPage());
+                },
+                child: searchItem(list[index], index));
           },
           itemCount: list.length,
         ),

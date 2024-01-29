@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:wyyapp/5my/userpage.dart';
+import 'package:wyyapp/search/result.dart';
 import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/playlist_square/view.dart';
 import '../../utils.dart';
@@ -82,7 +82,6 @@ class PlayListDetailPage extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           decoration: const BoxDecoration(
-                            color: Colors.white,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(10),
                               topRight: Radius.circular(10),
@@ -117,16 +116,39 @@ class PlayListDetailPage extends StatelessWidget {
                 ),
               ];
             },
-            body: Container(
+            body: SizedBox(
               width: Get.width,
-              color: Colors.white,
               child: GetBuilder<PlayListDetailLogic>(
                 builder: (controller) {
-                  return ListView.builder(
+                  return ListView.separated(
                     physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     itemCount: state.songlist.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return SongTile(songItem: state.songlist[index], index: index + 1);
+                      var item = state.songlist[index];
+                      return SizedBox(
+                        height: 50,
+                        child: MusicItem(
+                          head: Text(
+                            "$index",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          title: item["name"] ?? "默认名字",
+                          titleExtend: item["alia"] == null || item["alia"].isEmpty ? "" : "(${item["alia"][0]})",
+                          subTitle: item["ar"][0]["name"] ?? "默认歌手 - ${item["al"]["name"] ?? "默认专辑"}",
+                          onTapTile: () {
+                            SongManager.playMusic(item);
+                          },
+                          tail: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(Icons.more_vert),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const Gap(10);
                     },
                   );
                 },
@@ -179,11 +201,7 @@ class PlayHeader extends StatelessWidget {
                   ),
                   const Gap(10),
                   GestureDetector(
-                    onTap: () {
-                      Get.to(
-                        () => UsePage(userId: Get.find<PlayListDetailLogic>().state.creator["userId"], type: 'user'),
-                      );
-                    },
+                    onTap: () {},
                     child: Row(
                       children: [
                         ClipOval(
@@ -263,67 +281,9 @@ class PlayHeader extends StatelessWidget {
   }
 }
 
-class SongTile extends StatelessWidget {
-  final Map songItem;
-  final int index;
 
-  const SongTile({super.key, required this.songItem, required this.index});
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        SongManager.playMusic(songItem);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        height: 50,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("$index", style: const TextStyle(color: Colors.grey)),
-            const Gap(15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: RichText(
-                      maxLines: 1,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: songItem["name"] ?? "默认名字",
-                            style: const TextStyle(color: Colors.black),
-                          ),
-                          TextSpan(
-                            text:
-                                songItem["alia"] == null || songItem["alia"].isEmpty ? "" : "(${songItem["alia"][0]})",
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      songItem["ar"][0]["name"] ?? "默认歌手 - ${songItem["al"]["name"] ?? "默认专辑"}",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.more_vert, color: Colors.grey),
-          ],
-        ),
-      ),
-    );
-  }
-}
+
 
 class BuildIcon extends StatelessWidget {
   final IconData icon;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:wyyapp/search/result.dart';
 
 import 'logic.dart';
 
@@ -25,8 +26,9 @@ class SearchSuggestList extends StatelessWidget {
 
   Widget searchSuggestItem(var item) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         state.searchKeyword = item["keyword"];
+        Get.to(() => const SearchResultPage());
       },
       child: SizedBox(
         height: 40,
@@ -42,7 +44,6 @@ class SearchSuggestList extends StatelessWidget {
               item["keyword"],
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.black,
               ),
             ),
           ],

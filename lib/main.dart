@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:wyyapp/config.dart';
 import 'package:wyyapp/tab_view/view.dart';
 
 void main() {
@@ -41,6 +44,16 @@ ThemeData themeData = ThemeData(
     ),
     elevation: 0,
   ),
+  primaryColor: Colors.white,
+  scaffoldBackgroundColor: defaultColor,
+  cardColor: Colors.white,
+  canvasColor: Colors.white,
+  textTheme: const TextTheme(),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      primary: Colors.black,
+    ),
+  ),
 );
 
 ThemeData darkThemeData = ThemeData.dark().copyWith(
@@ -48,5 +61,12 @@ ThemeData darkThemeData = ThemeData.dark().copyWith(
     toolbarHeight: 35,
     backgroundColor: Colors.black,
     elevation: 0,
+  ),
+  cardColor: Colors.black,
+  textTheme: const TextTheme(),
+  textSelectionTheme: const TextSelectionThemeData(
+    cursorColor: Colors.white,
+    selectionColor: Colors.white,
+    selectionHandleColor: Colors.white,
   ),
 );

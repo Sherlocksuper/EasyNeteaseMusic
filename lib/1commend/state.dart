@@ -3,10 +3,6 @@ import 'package:flutter/cupertino.dart';
 class CommendState {
   PageController pageController = PageController(viewportFraction: 0.90);
 
-  List commandPlayList = [];
-
-  List dailyCommandPlayList = [];
-
   //歌单分类
   List playListCatList = [];
 
@@ -21,40 +17,34 @@ class CommendState {
   //场景歌单的标签item们
   List scenePlayListTags = [];
 
-  //场景歌单
-  List scenePlayList = [];
-
   //**********************************//
 
   //心情歌单的标签item们
   List moodPlayListTags = [];
 
-  //心情氛围歌单
-  List moodPlayList = [];
-
-  //**********************************//
-
-  //主题歌单的标签item们
-  List themePlayListTags = [];
-
-  //主题歌单
-  List themePlayList = [];
-
-  //**********************************//
-
   //榜单列表
   List topList = [];
 
-  //选择的榜单分类
-  List selectTopList = [];
 
-  List newSongList = [];
+  //广播
+  List broadcastList = [];
 
-  //**********************************//
+  Map<String, FunctionList> functionsMap = {
+    "commandPlay": FunctionList("推荐歌单", "card", []),
+    "newSong": FunctionList("新歌推荐", "tile", []),
+    "selectTop": FunctionList("排行榜", "card", []),
+    "moodPlay": FunctionList("心情歌单", "card", []),
+    "scenePlay": FunctionList("场景歌单", "card", []),
+    "broadcast": FunctionList("广播", "card", []),
+  };
 
-  late BuildContext navigatorContext;
+  CommendState();
+}
 
-  CommendState() {
-    ///Initialize variables
-  }
+class FunctionList {
+  String title;
+  String type;
+  List list;
+
+  FunctionList(this.title, this.type, this.list);
 }
