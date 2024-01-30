@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'dart:developer';
-import 'dart:html';
 import 'dart:math' hide log;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:wyyapp/utils/FileManager.dart';
 import '../LoginPrefs.dart';
@@ -31,19 +32,50 @@ class SongManager {
   //预备播放歌曲列表 ,存取音乐item
   static List<Map> songListToPlay = [];
 
+  //当前歌曲歌词
+  static List<dynamic> songLyric = [];
+
+  static FixedExtentScrollController lyricController = FixedExtentScrollController();
+
+  //**********************下载数据********************** */
+
   //初始化监听器
   //五个state，分别是stopped, playing, paused, completed, disposed
   static initSongModule() {
+    Get.put(MusicPlayLogic());
     audioPlayer.onPositionChanged.listen((event) {
       log(event.toString());
       nowProgress = event;
       Get.find<MusicPlayLogic>().update(["progress"]);
+
+      //歌词滚动
+      if (songLyric.isNotEmpty) {
+        for (int i = 0; i < songLyric.length; i++) {
+          if (i == songLyric.length - 1) {
+            // lyricController.jumpToItem(i);
+            lyricController.animateToItem(i, duration: const Duration(milliseconds: 200), curve: Curves.ease);
+            break;
+          }
+          if (event.inMilliseconds >= songLyric[i]["time"].inMilliseconds &&
+              event.inMilliseconds < songLyric[i + 1]["time"].inMilliseconds) {
+            lyricController.animateToItem(i, duration: const Duration(milliseconds: 200), curve: Curves.ease);
+            break;
+          }
+        }
+      }
     });
 
     audioPlayer.onDurationChanged.listen((Duration d) {});
 
     audioPlayer.onPlayerComplete.listen((event) {
-      playMode == PlayMode.loop ? resumeMusic() : playNextMusic();
+      //根据三种状态选择不同的模式
+      if (playMode == PlayMode.loop) {
+        resumeMusic();
+      } else if (playMode == PlayMode.order) {
+        playNextMusic();
+      } else if (playMode == PlayMode.random) {
+        playRandomMusic();
+      }
     });
 
     //当播放状态改变的时候
@@ -69,27 +101,44 @@ class SongManager {
 
   //播放
   static Future<void> playMusic(Map musicItem) async {
-    if (!hasInit) {
-      initSongModule();
+    if (!hasInit) initSongModule();
+
+    if (musicItemInfo["id"] == musicItem["id"]) {
+      //如果等于的话，就直接打开播放页
+      Get.bottomSheet(
+        SizedBox(
+          height: Get.height,
+          child: MusicPlayPage(),
+        ),
+        isScrollControlled: true,
+      );
+      continueMusic();
+      return;
     }
 
     //如果musicItem不在预备播放列表里面，就添加进去
-    if (!songListToPlay.contains(musicItem)) {
-      addSongToPreparePlayList(musicItem);
-    }
+    if (!songListToPlay.contains(musicItem)) addSongToPreparePlayList(musicItem);
+
+    clearData();
 
     musicItemInfo = musicItem;
-    Get.bottomSheet(
-      SizedBox(
-        height: Get.height,
-        child: MusicPlayPage(),
-      ),
-      isScrollControlled: true,
-    );
+
+    if (Get.isBottomSheetOpen == false) {
+      Get.bottomSheet(
+        SizedBox(
+          height: Get.height,
+          child: MusicPlayPage(),
+        ),
+        isScrollControlled: true,
+      );
+    }
+
+    Get.find<MusicPlayLogic>().update();
+
     //获取了当前音乐的info，包括url
     musicPlayInfo = await getMusicUrl(musicItemInfo["id"].toString());
+    songLyric = await getMusicLyric(musicItemInfo["id"].toString());
 
-    //开始播放
     await audioPlayer.play(UrlSource(musicPlayInfo["url"]));
     //获取总时长
     totalLength = (await audioPlayer.getDuration())!;
@@ -137,30 +186,58 @@ class SongManager {
     if (!hasInit) {
       initSongModule();
     }
-    //如果是随机播放
 
-    if (playMode == PlayMode.random) {
-      int index = Random().nextInt(songListToPlay.length);
-      await playMusic(songListToPlay[index]);
+    int index = songListToPlay.indexOf(musicItemInfo);
+    if (index == songListToPlay.length - 1) {
+      await playMusic(songListToPlay[0]);
     } else {
-      int index = songListToPlay.indexOf(musicItemInfo);
-      if (index == songListToPlay.length - 1) {
-        await playMusic(songListToPlay[0]);
-      } else {
-        await playMusic(songListToPlay[index + 1]);
-      }
+      await playMusic(songListToPlay[index + 1]);
     }
+  }
+
+  //播放上一首歌
+  static Future<void> playPreviousMusic() async {
+    if (!hasInit) {
+      initSongModule();
+    }
+
+    int index = songListToPlay.indexOf(musicItemInfo);
+    if (index == 0) {
+      EasyLoading.showToast("已经是第一首了哦~");
+    } else {
+      await playMusic(songListToPlay[index - 1]);
+    }
+  }
+
+  //随机播放一首歌
+  static Future<void> playRandomMusic() async {
+    if (!hasInit) {
+      initSongModule();
+    }
+    int index = Random().nextInt(songListToPlay.length);
+    await playMusic(songListToPlay[index]);
+  }
+
+  //添加歌曲到下一首播放
+  static void addSongToNextPlay(Map musicItem) {
+    songListToPlay.insert(songListToPlay.indexOf(musicItemInfo) + 1, musicItem);
+  }
+
+  //添加歌曲到最后播放
+  static void addSongToLastPlay(Map musicItem) {
+    songListToPlay.add(musicItem);
   }
 
   //**************操作数据***************** */
 
-  //清空数据
+  //清空 进度 、播放状态 、转圈
   static void clearData() {
-    musicItemInfo = {};
-    musicPlayInfo = {};
     nowProgress = Duration(seconds: 0);
-    totalLength = Duration();
     playerState = PlayerState.stopped;
+    audioPlayer.stop();
+    songLyric = [];
+    Get.find<MusicPlayLogic>().RController.stop();
+    Get.find<MusicPlayLogic>().update();
   }
 
   //这里只会返回一个Map
@@ -182,17 +259,87 @@ class SongManager {
     return response.data["data"][0];
   }
 
-  //直接下载当前歌曲
-  static Future<bool> downloadCurrentSong() async {
-    var result = false;
+  //获取歌曲详情
+  static Future<Map> getMusicDetail(String id) async {
+    var response = await dio.get("$baseUrl/song/detail?ids=$id");
+    return response.data["songs"][0];
+  }
 
-    Map targetItemInfo = await getMusicDetail(musicItemInfo["id"].toString());
-    Map targetPlayInfo = await getMusicUrl(musicItemInfo["id"].toString());
+  //获取歌曲歌词
+  static Future<List<dynamic>> getMusicLyric(String id) async {
+    var response = await dio.get("$baseUrl/lyric?id=$id");
+    List lyricList = response.data["lrc"]["lyric"].split("\n");
 
-    String targetUrl = musicPlayInfo["url"];
-    String name = MusicDLInfo(targetItemInfo, targetPlayInfo).getMusicPath();
-    result = await FileManager.downLoad("song", name, "mp3", targetUrl);
+    log("message");
+    log(lyricList.toString());
+
+    List<dynamic> result = [];
+
+    for (var item in lyricList) {
+      if (item == "") {
+        continue;
+      }
+      List<String> tempList = item.split("]");
+      result.add({
+        "time": Duration(
+            minutes: int.parse(tempList[0].substring(1, 3)),
+            seconds: int.parse(tempList[0].substring(4, 6)),
+            milliseconds: int.parse(tempList[0].substring(7, 9))),
+        "lyric": tempList[1],
+      });
+    }
+
     return result;
+  }
+
+  //**************操作列表***************** */
+
+  //添加歌曲到预备播放列表
+  static void addSongToPreparePlayList(Map musicItem) {
+    //判断是否有id一样的歌曲
+    for (var element in songListToPlay) {
+      if (element["id"] == musicItem["id"]) {
+        return;
+      }
+    }
+
+    songListToPlay.add(musicItem);
+  }
+
+  //把歌曲从预备播放列表移除
+  static void removeSongFromPreparePlayList(Map musicItem) {
+    //如果只有一首
+    if (songListToPlay.length == 1) {
+      EasyLoading.showToast("只剩一首歌了哦~ 不能再删了哦~");
+      return;
+    }
+
+    if (musicItem == musicItemInfo) {
+      playNextMusic();
+    }
+    songListToPlay.remove(musicItem);
+    Get.find<MusicPlayLogic>().update();
+  }
+
+  //************歌曲的下载操作和属性************** */
+
+  //首先要挑选一个文件，存储音乐的item信息下载到的路径
+  //然后要挑选一个文件，存储音乐的url资源信息
+
+  //下载歌曲资源的路径,这里是固定的app下的文件夹,存放mp3
+  static String musicDownloadPath = "songs";
+
+  //数据存储的路径,存储在外部存储的文件夹
+  static String musicDataPath = "data";
+
+  //待下载列表
+  static List<Map> downloadList = [];
+
+  //基础读写操作
+
+  //下载歌曲  传入 确定的文件名称和url
+  static Future<bool> downloadSong(String name, String url) async {
+    return await FileManager.downLoad(musicDownloadPath, name, "mp3", url);
   }
 
   //通过id下载歌曲,因为部分展示的歌曲没有url，所以需要先获取url
@@ -202,16 +349,13 @@ class SongManager {
     Map targetItemInfo = await getMusicDetail(id);
     Map targetPlayInfo = await getMusicUrl(id);
 
-    String targetUrl = (await getMusicUrl(id))["url"];
-    String name = MusicDLInfo(targetItemInfo, targetPlayInfo).getMusicPath();
-    result = await FileManager.downLoad("song", name, "mp3", targetUrl);
-    return result;
-  }
+    String targetUrl = targetPlayInfo["url"];
 
-  //获取下载了的所有歌曲
-  static Future<List<Map>> getDownloadedSong() async {
-    List<Map> songList = await FileManager.listFiles("song");
-    return songList;
+    //文件名
+    String name = DateTime.timestamp().toString();
+    result = await downloadSong(name, targetUrl);
+
+    return result;
   }
 
   //删除歌曲
@@ -219,52 +363,21 @@ class SongManager {
     return await FileManager.deleteFile(path);
   }
 
-  //获取歌曲详情
-  static Future<Map> getMusicDetail(String id) async {
-    var response = await dio.get("$baseUrl/song/detail?ids=$id");
-    return response.data["songs"][0];
-  }
-
-  //**************操作列表***************** */
-
-  //添加歌曲到预备播放列表
-  static void addSongToPreparePlayList(Map musicItem) {
-    songListToPlay.add(musicItem);
-  }
-
-  //把歌曲从预备播放列表移除
-  static void removeSongFromPreparePlayList(Map musicItem) {
-    songListToPlay.remove(musicItem);
+  static void seekMusic(double d) {
+    audioPlayer.seek(Duration(milliseconds: (d * totalLength.inMilliseconds).toInt()));
   }
 }
 
-class MusicDLInfo {
-  String musicName = "";
-  String musicAuthor = "";
-  String musicDesc = "";
-  String musicBitrate = "";
+class LocalSong {
+  List<Map> songList = [];
 
-  //初始化的时候要传入item和play
-  MusicDLInfo(Map itemInfo, Map playInfo) {
-    log(itemInfo.toString());
-    musicName = itemInfo["name"] ?? "名称未知";
-    musicAuthor = (itemInfo["song"]?["artists"] ?? itemInfo["ar"] as List).map((e) => e["name"]).toList().join(" ");
-    musicDesc = itemInfo["alias"]?.toString() ?? "暂无描述";
-    musicBitrate = playInfo["br"].toString();
-  }
-
-  //fromString
-  MusicDLInfo.fromString(String path) {
-    List<String> pathList = path.split(" ");
-    musicName = pathList[0];
-    musicAuthor = pathList[1];
-    musicDesc = pathList[2];
-    musicBitrate = pathList[3];
-  }
-
-  //下载的时候返回拼接的String
-  String getMusicPath() {
-    return "$musicName & $musicAuthor & $musicDesc & $musicBitrate";
+  LocalSong.fromJson(Map<String, dynamic> json) {
+    if (json['songList'] != null) {
+      songList = [];
+      json['songList'].forEach((v) {
+        songList.add(Map<String, dynamic>.from(v));
+      });
+    }
   }
 }
 
@@ -284,6 +397,12 @@ class MusicDLInfo {
 // company: 网易·云上 X 网易音乐人, briefDesc: , artist: {name: , id: 0, picId: 0, img1v1Id: 0, briefDesc: , picUrl: , img1v1Url: http://p4.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg, albumSize: 0,
 // alias: [], trans: , musicSize: 0, topicPerson: 0}, songs: [], alias: [仙剑六影视剧《祈今朝》独爱片尾主题曲], status: 1, copyrightId: -1, commentThreadId: R_AL_3_183332158, artists: [{name: 周深, id: 1030001, picId: 0,
 // img1v1Id: 0, briefDesc: , picUrl: , img1v1Url: http://p3.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg, albumSize: 0, alias: [], trans: , musicSize: 0, topicPerson: 0}], subType: 录音室版, transName: null, onSale: false, mark: 0, gapless: 0, picId_str: 109951169282470776}, starred: false, popularity: 100, score: 100, starredNum: 0, duration: 215463, playedNum: 0, dayPlays: 0, hearTime: 0, sqMusic: {name: null, id: 8789524643, size: 22595730, extension: flac, sr: 48000, dfsId: 0, bitrate: 838962, playTime: 215463, volumeDelta: -9006}, hrMusic: {name: null, id: 8789524642, size: 43306703, extension: flac, sr: 48000, dfsId: 0, bitrate: 1607944, playTime: 215463, volumeDelta: -8912}, ringtone: , crbt: null, audition: null, copyFrom: , commentThreadId: R_SO_4_2117905342, rtUrl:
+
+//{name: Do That, id: 2118458192, pst: 0, t: 0, ar: [{id: 51957057, name: ljz329, tns: [], alias: []}, {id: 1132392, name: 马思唯, tns: [], alias: []}], alia: [], pop: 100, st: 0, rt: , fee: 8, v: 4, crbt: null, cf: ,
+// al: {id: 183494872, name: Do That, picUrl: http://p2.music.126.net/Q3p_jBF64PDmBZz6oSnVpg==/109951169268410736.jpg, tns: [], pic_str: 109951169268410736, pic: 109951169268410740}, dt: 184421,
+// h: {br: 320000, fid: 0, size: 7379113, vd: -68512}, m: {br: 192000, fid: 0, size: 4427485, vd: -65895}, l: {br: 128000, fid: 0, size: 2951671, vd: -64166}, sq: {br: 1546481, fid: 0, size: 35650471, vd: -68501},
+// hr: null, a: null, cd: 01, no: 1, rtUrl: null, ftype: 0, rtUrls: [], djId: 0, copyright: 0, s_id: 0, mark: 17179877376, originCoverType: 1, originSongSimpleData: null, tagPicList: null, resourceState: true, version: 4,
+// songJumpInfo: null, entertainmentTags: null, awardTags: null, single: 0, noCopyrightRcmd: null, rtype: 0, rurl: null, mst: 9, cp: 0, mv: 0, publishTime: 1705680000000}
 
 //循环、顺序、随机
 enum PlayMode {

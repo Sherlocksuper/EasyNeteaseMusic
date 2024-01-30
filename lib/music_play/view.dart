@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -75,8 +76,8 @@ class MusicPlayPage extends StatelessWidget {
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                   AutoSizeText(
-                                    SongManager.musicItemInfo?["ar"]?[0]?["name"] ??
-                                        SongManager.musicItemInfo?["song"]?["artists"]?[0]?["name"] ??
+                                    SongManager.musicItemInfo["ar"]?[0]?["name"] ??
+                                        SongManager.musicItemInfo["song"]?["artists"]?[0]?["name"] ??
                                         "",
                                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                                   ),
@@ -88,19 +89,8 @@ class MusicPlayPage extends StatelessWidget {
                       },
                     ),
                   ),
-                  body: GestureDetector(
-                    onTap: () {
-                      state.showDetail = !state.showDetail;
-                      logic.update();
-                    },
-                    child: Center(
-                      child: GetBuilder<MusicPlayLogic>(
-                        builder: (logic) {
-                          return !logic.state.showDetail ? SongPlay() : SongDetail();
-                        },
-                      ),
-                    ),
-                  ),
+                  //不可以加const，否则状态不会改变
+                  body: SongPlay(),
                 ),
               ],
             ),
@@ -124,23 +114,34 @@ class _SongPlayState extends State<SongPlay> {
     super.initState();
   }
 
+  bool showLyric = false;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Expanded(
-          child: Center(
-            child: RotationTransition(
-              turns: Tween(begin: 0.0, end: 1.0).animate(
-                Get.find<MusicPlayLogic>().RController,
-              ),
-              child: ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
-                  height: Get.width * 0.8,
-                  width: Get.width * 0.8,
-                ),
-              ),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                showLyric = !showLyric;
+              });
+            },
+            child: Center(
+              child: showLyric
+                  ? SongDetail()
+                  : RotationTransition(
+                      turns: Tween(begin: 0.0, end: 1.0).animate(
+                        Get.find<MusicPlayLogic>().RController,
+                      ),
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: SongManager.musicItemInfo["picUrl"] ?? SongManager.musicItemInfo["al"]["picUrl"],
+                          height: Get.width * 0.8,
+                          width: Get.width * 0.8,
+                        ),
+                      ),
+                    ),
             ),
           ),
         ),
@@ -149,7 +150,7 @@ class _SongPlayState extends State<SongPlay> {
           children: [
             buildPlayIcon(Icons.favorite_border, () {}),
             buildPlayIcon(Icons.file_download, () {
-              SongManager.downloadCurrentSong();
+              SongManager.downloadSongById(SongManager.musicItemInfo["id"]);
             }),
             buildPlayIcon(Icons.comment, () {}),
             buildPlayIcon(Icons.share, () {}),
@@ -161,6 +162,9 @@ class _SongPlayState extends State<SongPlay> {
           builder: (logic) {
             return ProgressBar(
               onSeek: (duration) async {},
+              onDragUpdate: (details) async {
+                SongManager.seekMusic(details.globalPosition.dx / Get.width);
+              },
               progress: SongManager.nowProgress,
               total: SongManager.totalLength,
               baseBarColor: Colors.white,
@@ -179,10 +183,20 @@ class _SongPlayState extends State<SongPlay> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              buildPlayIcon(Icons.autorenew_rounded, () {
-                SongManager.resumeMusic();
-              }),
-              buildPlayIcon(Icons.skip_previous, () {}),
+              GestureDetector(
+                child: const Icon(
+                  Icons.autorenew_rounded,
+                  size: 30,
+                  color: Colors.white,
+                ),
+                onTap: () {},
+              ),
+              GestureDetector(
+                child: const Icon(Icons.skip_previous, size: 50, color: Colors.white),
+                onTap: () {
+                  SongManager.playPreviousMusic();
+                },
+              ),
               GestureDetector(
                 child: Icon(
                     SongManager.playerState == PlayerState.playing
@@ -198,48 +212,90 @@ class _SongPlayState extends State<SongPlay> {
                   }
                 },
               ),
-              buildPlayIcon(Icons.skip_next, () {}),
-              buildPlayIcon(Icons.playlist_play, () {
-                //弹出弹窗，展示播放列表
-                Get.bottomSheet(
-                  Container(
-                    height: Get.height * 0.5,
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        const Gap(10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            const Text("播放列表"),
-                            IconButton(
-                              onPressed: () {
-                                Get.back();
-                              },
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                        const Gap(10),
-                        Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              Map item = SongManager.songListToPlay[index];
-                              return MusicItem(
-                                title: item["name"],
-                                subTitle: item["ar"][0]["name"],
-                                imageUrl: item["al"]["picUrl"],
-                              );
-                            },
-                            itemCount: SongManager.songListToPlay.length,
+              GestureDetector(
+                child: const Icon(Icons.skip_next, size: 50, color: Colors.white),
+                onTap: () {
+                  SongManager.playNextMusic();
+                },
+              ),
+              GestureDetector(
+                child: const Icon(Icons.playlist_play, size: 30, color: Colors.white),
+                onTap: () {
+                  Get.bottomSheet(
+                    GetBuilder<MusicPlayLogic>(
+                      builder: (logic) {
+                        return Container(
+                          height: Get.height * 0.5,
+                          color: Colors.white,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Gap(10),
+                                  const Text(
+                                    "播放列表",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    icon: const Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemBuilder: (context, index) {
+                                    Map songItem = SongManager.songListToPlay[index];
+                                    bool isPlaying = SongManager.musicItemInfo["id"] == songItem["id"];
+                                    return ListTile(
+                                      title: Text(
+                                        songItem["name"],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isPlaying ? Colors.red : Colors.black,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        songItem["song"]?["artists"]?[0]?["name"] ??
+                                            songItem["ar"]?[0]?["name"] ??
+                                            "未知",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isPlaying ? Colors.red : Colors.black,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        SongManager.playMusic(songItem);
+                                      },
+                                      trailing: IconButton(
+                                        onPressed: () {
+                                          SongManager.removeSongFromPreparePlayList(songItem);
+                                        },
+                                        icon: const Icon(Icons.close),
+                                      ),
+                                    );
+                                  },
+                                  itemCount: SongManager.songListToPlay.length,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                );
-              }),
+                  );
+                },
+              ),
             ],
           ),
         )
@@ -267,10 +323,24 @@ class SongDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Text("data"),
-      ],
+    return ListWheelScrollView(
+      itemExtent: 100,
+      diameterRatio: 2.5,
+      controller: SongManager.lyricController,
+      children: SongManager.songLyric.map((e) {
+        return Center(
+          child: Text(
+            e["lyric"].toString(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              //字体
+              fontFamily: "XingShu",
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

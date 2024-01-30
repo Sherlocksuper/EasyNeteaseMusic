@@ -15,9 +15,11 @@ class DownloadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Future(() async => {
-            state.downloadedSong = await SongManager.getDownloadedSong(),
-          }),
+      future: Future(
+        () async => {
+          state.downloadedSong = [],
+        },
+      ),
       builder: (context, snapshot) {
         return Scaffold(
           appBar: AppBar(
@@ -54,7 +56,6 @@ class DownloadPage extends StatelessWidget {
                             TextButton(
                               onPressed: () async {
                                 await SongManager.deleteSong(state.downloadedSong[index]["path"]);
-                                state.downloadedSong = await SongManager.getDownloadedSong();
                                 Get.find<DownloadLogic>().update();
                                 Get.back();
                               },

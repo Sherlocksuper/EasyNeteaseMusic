@@ -138,6 +138,7 @@ class CommandContent extends StatelessWidget {
   }
 }
 
+
 class ShowShieldForCard extends StatelessWidget {
   final String title;
   final Function? onTap;

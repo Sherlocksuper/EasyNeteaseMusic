@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:wyyapp/batch_manager/view.dart';
 import 'package:wyyapp/search/result.dart';
 import 'package:wyyapp/utils/Song.dart';
 import 'package:wyyapp/playlist_square/view.dart';
@@ -24,7 +26,9 @@ class PlayListDetailPage extends StatelessWidget {
     return FutureBuilder(
       future: Future(
         () async => {
+          log("haha"),
           await logic.getPlayDetail(),
+          log("haha"),
         },
       ),
       builder: (context, snapshot) {
@@ -37,13 +41,11 @@ class PlayListDetailPage extends StatelessWidget {
               return [
                 SliverLayoutBuilder(
                   builder: (context, constraints) {
-                    final bool scrolled = constraints.scrollOffset > Get.height / 3 - 50;
                     return SliverAppBar(
                       stretch: true,
                       toolbarHeight: 50,
-                      title: Text(
+                      title: const Text(
                         '歌单',
-                        style: TextStyle(color: scrolled ? Colors.black : Colors.white),
                       ),
                       pinned: true,
                       floating: false,
@@ -90,22 +92,35 @@ class PlayListDetailPage extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              const Icon(
-                                Icons.play_circle_fill_outlined,
-                                color: Colors.red,
+                              GestureDetector(
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.play_circle_fill_outlined,
+                                      color: Colors.red,
+                                    ),
+                                    Gap(10),
+                                    Text("播放全部"),
+                                  ],
+                                ),
+                                onTap: () {
+                                  Get.to(
+                                      () => BatchManagerPage(songList: state.songlist, type: BatchType.addToPlaylist));
+                                },
                               ),
-                              const Gap(10),
-                              const Text("播放全部"),
                               Text("(共${Get.find<PlayListDetailLogic>().state.playDetail["trackCount"]}首)",
                                   style: const TextStyle(color: Colors.grey)),
                               const Spacer(),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Get.to(
+                                    () => BatchManagerPage(
+                                      songList: Get.find<PlayListDetailLogic>().state.songlist,
+                                      type: BatchType.download,
+                                    ),
+                                  );
+                                },
                                 icon: const Icon(Icons.download_rounded),
-                              ),
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.check_circle_outline),
                               ),
                             ],
                           ),
@@ -129,7 +144,7 @@ class PlayListDetailPage extends StatelessWidget {
                         height: 50,
                         child: MusicItem(
                           head: Text(
-                            "$index",
+                            "${index + 1}",
                             style: const TextStyle(color: Colors.grey),
                           ),
                           title: item["name"] ?? "默认名字",
@@ -139,10 +154,34 @@ class PlayListDetailPage extends StatelessWidget {
                             SongManager.playMusic(item);
                           },
                           tail: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.more_vert),
-                            ),
+                            PopupMenuButton(
+                              position: PopupMenuPosition.under,
+                              itemBuilder: (context) {
+                                return [
+                                  PopupMenuItem(
+                                    value: 1,
+                                    onTap: () {
+                                      SongManager.downloadSongById(item["id"]);
+                                    },
+                                    child: const Text("下载"),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 2,
+                                    onTap: () {
+                                      SongManager.addSongToNextPlay(item);
+                                    },
+                                    child: const Text("下一首播放"),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 3,
+                                    onTap: () {
+                                      SongManager.addSongToLastPlay(item);
+                                    },
+                                    child: const Text("添加到播放列表"),
+                                  ),
+                                ];
+                              },
+                            )
                           ],
                         ),
                       );
@@ -280,10 +319,6 @@ class PlayHeader extends StatelessWidget {
     );
   }
 }
-
-
-
-
 
 class BuildIcon extends StatelessWidget {
   final IconData icon;

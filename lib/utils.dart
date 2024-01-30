@@ -40,6 +40,7 @@ Future<bool> downLoadImage(String url) async {
   }
 }
 
-void open(){
+void open() {
   EasyLoading.showToast("此功能暂未开放");
 }
+

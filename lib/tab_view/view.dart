@@ -10,6 +10,7 @@ import 'package:wyyapp/LoginPrefs.dart';
 import 'package:wyyapp/config.dart';
 import 'package:wyyapp/login/view.dart';
 import 'package:wyyapp/tab_view/drawer/view.dart';
+import '../2find/view.dart';
 import 'logic.dart';
 
 class TabViewPage extends StatelessWidget {
@@ -69,8 +70,9 @@ class TabViewContent extends StatelessWidget {
         },
         children: [
           KeepAliveWrapper(child: CommendPage()),
-          KeepAliveWrapper(child: UsePage()),
+          // KeepAliveWrapper(child: HomePage()),
           // KeepAliveWrapper(child: FindPage()),
+          KeepAliveWrapper(child: UsePage()),
           // KeepAliveWrapper(child: RoamPage()),
           // DynamicPage(),
         ],
@@ -90,6 +92,10 @@ class TabViewContent extends StatelessWidget {
                 icon: Icon(Icons.home),
                 label: "推荐",
               ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.explore_outlined),
+              //   label: "哈哈",
+              // ),
               // BottomNavigationBarItem(
               //   icon: Icon(Icons.explore_outlined),
               //   label: "发现",
