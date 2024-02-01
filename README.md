@@ -21,22 +21,27 @@ A new Flutter project.
 ![img.png](source/analyze.png)
 
 ## 项目截图
+![img.png](source/in.jpg)
 
 下载功能
-
-![下载功能展示](source/download.mp4)
+![img_2.png](img_2.png)
 
 通过android 的notification实现下载进度的展示 以及播放的控制
-![notification.mp4](source/notificationAmusiclist.mp4)
+![img.png](source/notifi.jpg)
+[notification.mp4](source/notificationAmusiclist.mp4)
+
+搜索
+![img.png](source/search.png)
 
 深色模式
-![dark](source/darkmode.mp4)
+![dark mode](source/dark.jpg)
 
 歌单广场
-![play](source/playsq.mp4)
+![img_1.png](img_1.png)
+![img_3.png](img_3.png)
 
 批量管理
-![playlist](source/addtoplaylist.mp4)
+[playlist](source/addtoplaylist.mp4)
 
 以下是对于网易云音乐接口的分析的一角，总的来说
 对我启发的最重要的点是
