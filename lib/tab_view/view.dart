@@ -133,62 +133,62 @@ class _TabViewContentState extends State<TabViewContent> with TickerProviderStat
           );
         },
       ),
-      bottomSheet: GetBuilder<MusicPlayLogic>(
-        builder: (logic) {
-          if (SongManager.musicItemInfo.isEmpty) {
-            return const SizedBox();
-          }
-          return GestureDetector(
-            onTap: () {
-              SongManager.playMusic(SongManager.musicItemInfo);
-            },
-            child: Container(
-              height: 80,
-              color: Colors.white,
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                children: [
-                  RotationTransition(
-                    turns: Tween(begin: 0.0, end: 1.0).animate(
-                      AnimationController(
-                        vsync: this,
-                        duration: const Duration(seconds: 10),
-                      )..repeat(),
-                    ),
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: SongManager.musicItemInfo["picUrl"] ?? "",
-                      ),
-                    ),
-                  ),
-                  const Gap(10),
-                  Column(
-                    children: [
-                      Text(SongManager.musicItemInfo["name"],
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(SongManager.musicItemInfo["song"]?["artists"]?[0]?["name"] ?? ""),
-                    ],
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      if (SongManager.playerState == PlayerState.playing) {
-                        SongManager.pauseMusic();
-                      } else {
-                        SongManager.continueMusic();
-                      }
-                    },
-                    //根据播放状态
-                    icon: Icon(
-                      SongManager.playerState == PlayerState.playing ? Icons.pause : Icons.play_arrow,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+      // bottomSheet: GetBuilder<MusicPlayLogic>(
+      //   builder: (logic) {
+      //     if (SongManager.musicItemInfo.isEmpty) {
+      //       return const SizedBox();
+      //     }
+      //     return GestureDetector(
+      //       onTap: () {
+      //         SongManager.playMusic(SongManager.musicItemInfo);
+      //       },
+      //       child: Container(
+      //         height: 80,
+      //         color: Colors.white,
+      //         padding: const EdgeInsets.all(15),
+      //         child: Row(
+      //           children: [
+      //             RotationTransition(
+      //               turns: Tween(begin: 0.0, end: 1.0).animate(
+      //                 AnimationController(
+      //                   vsync: this,
+      //                   duration: const Duration(seconds: 10),
+      //                 )..repeat(),
+      //               ),
+      //               child: ClipOval(
+      //                 child: CachedNetworkImage(
+      //                   imageUrl: SongManager.musicItemInfo["picUrl"] ?? "",
+      //                 ),
+      //               ),
+      //             ),
+      //             const Gap(10),
+      //             Column(
+      //               children: [
+      //                 Text(SongManager.musicItemInfo["name"],
+      //                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      //                 Text(SongManager.musicItemInfo["song"]?["artists"]?[0]?["name"] ?? ""),
+      //               ],
+      //             ),
+      //             const Spacer(),
+      //             IconButton(
+      //               onPressed: () {
+      //                 if (SongManager.playerState == PlayerState.playing) {
+      //                   SongManager.pauseMusic();
+      //                 } else {
+      //                   SongManager.continueMusic();
+      //                 }
+      //               },
+      //               //根据播放状态
+      //               icon: Icon(
+      //                 SongManager.playerState == PlayerState.playing ? Icons.pause : Icons.play_arrow,
+      //               ),
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     );
+      //   },
+      // ),
     );
   }
 }

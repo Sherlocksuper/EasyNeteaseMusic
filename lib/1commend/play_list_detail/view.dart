@@ -161,7 +161,7 @@ class PlayListDetailPage extends StatelessWidget {
                                   PopupMenuItem(
                                     value: 1,
                                     onTap: () {
-                                      SongManager.downloadSongById(item["id"]);
+                                      // SongManager.downloadSongById(item["id"]);
                                     },
                                     child: const Text("下载"),
                                   ),

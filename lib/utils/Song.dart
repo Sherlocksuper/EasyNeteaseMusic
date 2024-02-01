@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
+import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart' hide Response, debounce;
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wyyapp/utils/FileManager.dart';
 import 'package:wyyapp/utils/Notification.dart';
 import '../LoginPrefs.dart';
@@ -249,7 +254,7 @@ class SongManager {
 
   //清空 进度 、播放状态 、转圈
   static void clearData() {
-    nowProgress = Duration(seconds: 0);
+    nowProgress = const Duration(seconds: 0);
     playerState = PlayerState.stopped;
     audioPlayer.stop();
     songLyric = [];
@@ -340,47 +345,141 @@ class SongManager {
 
   ///************歌曲的下载操作和属性************** */
 
-  //首先要挑选一个文件，存储音乐的item信息下载到的路径
-  //然后要挑选一个文件，存储音乐的url资源信息
+  //用歌曲id命名，相同文件夹下 保存,传入一个musicItemInfo,来下载   /id/xxx.png  /id/xxx.mp3  /id/xxx
+  //1.图片下载路径
+  //2.歌曲mp3下载路径
+  //3.歌词下载路径
 
-  //下载歌曲资源的路径,这里是固定的app下的文件夹,存放mp3
-  static String musicDownloadPath = "songs";
+  //一个文件夹统一保存下载的歌曲的id  wyy
+  static String downloadPath = "wyy2";
 
-  //数据存储的路径,存储在外部存储的文件夹
-  static String musicDataPath = "data";
+  ///下载歌曲
+  static downloadSongById(String id) async {
+    EasyLoading.showToast("开始下载");
 
-  //待下载列表
-  static List<Map> downloadList = [];
+    //获取歌曲详情
+    Map musicItem = await getMusicDetail(id);
 
-  //基础读写操作
+    //检测wyy目录是否存在，不存在则创建
+    if (!await FileManager.isExist(downloadPath)) await FileManager.createDir(downloadPath);
 
-  //下载歌曲  传入 确定的文件名称和url
-  static Future<bool> downloadSong(String name, String url) async {
-    return await FileManager.downLoad(musicDownloadPath, name, "mp3", url);
+    //检测歌曲id目录是否存在，不存在则创建
+    if (!await FileManager.isExist("$downloadPath/$id")) {
+      await FileManager.createDir("$downloadPath/$id");
+    } else {
+      EasyLoading.showToast("歌曲已下载，若有误则删除");
+      return;
+    }
+
+    /// 下载歌曲、 图片、 歌词  ,方法中传入id即可
+
+    bool imageResult = await downLoadImage(musicItem["al"]["picUrl"], id);
+    bool songResult = await downLoadSong(id);
+    bool lyricResult = await downLoadLyric(id);
+
+    if (imageResult && songResult && lyricResult) {
+      EasyLoading.showToast("下载成功");
+    } else {
+      EasyLoading.showToast("下载失败");
+      return;
+    }
+
+    //如果/本地歌曲列表.json不存在，就创建
+    if (!await FileManager.isExist("$downloadPath/localSong.json")) {
+      await FileManager.createFile("$downloadPath/localSong.json");
+      await FileManager.writeData("$downloadPath/localSong.json", '{"songList":[]}');
+    }
+
+    //在固定文件记录下载的歌曲的musicItemInfo
+    //获取本地歌曲列表
+
+    String temp = await FileManager.readData("$downloadPath/localSong.json");
+    if (temp == "") temp = '{"songList":[]}';
+
+    LocalSong localSong = LocalSong.fromJson((jsonDecode(temp)));
+
+    if (!localSong.songList.contains(musicItem)) {
+      localSong.songList.add(musicItem);
+    }
+
+    FileManager.clearData("$downloadPath/localSong.json");
+    FileManager.writeData("$downloadPath/localSong.json", jsonEncode(localSong.toJson()));
   }
 
-  //通过id下载歌曲,因为部分展示的歌曲没有url，所以需要先获取url
-  static Future<bool> downloadSongById(String id) async {
-    bool result = false;
+  //下载图片
+  static Future<bool> downLoadImage(String url, String id) async {
+    bool result = await FileManager.downLoad(url, downloadPath, "$id/$id", ".png");
+    if (result) {
+      log("图片下载成功");
+    } else {
+      log("图片下载失败");
+    }
+    return result;
+  }
 
-    Map targetItemInfo = await getMusicDetail(id);
-    Map targetPlayInfo = await getMusicUrl(id);
+  /// 下载歌曲 只传入id，url在方法内部获取
+  static Future<bool> downLoadSong(String id) async {
+    dio.options.headers["cookie"] = LoginPrefs.getCookie();
 
-    String targetUrl = targetPlayInfo["url"];
+    var response = await getMusicUrl(id);
 
-    //文件名
-    String name = DateTime.timestamp().toString();
-    result = await downloadSong(name, targetUrl);
+    if (response["code"] == -462) {
+      Get.defaultDialog(title: "错误", middleText: "验证错误");
+    } else if (response["code"] == -460) {
+      Get.defaultDialog(title: "错误", middleText: "网络拥挤");
+    }
+
+    bool result = await FileManager.downLoad(response["url"], downloadPath, "$id/$id", ".mp3");
+
+    if (result) {
+      log("歌曲下载成功");
+    } else {
+      log("歌曲下载失败");
+    }
 
     return result;
   }
 
-  //删除歌曲
-  static Future<bool> deleteSong(String path) async {
-    return await FileManager.deleteFile(path);
+  //下载歌词
+  static Future<bool> downLoadLyric(String id) async {
+    var response = await dio.get("$baseUrl/lyric/new?id=$id");
+    bool result = await FileManager.writeData("$id/$id.txt", response.data["lrc"]["lyric"]);
+
+    if (result) {
+      log("歌词下载成功");
+    } else {
+      log("歌词下载失败");
+    }
+
+    return result;
   }
 
-  /// app通知操作
+  /// 获取所所有下载的歌曲
+  static Future<List<Map>> getLocalSong() async {
+    LocalSong localSong;
+    try {
+      String temp = await FileManager.readData("$downloadPath/localSong.json");
+      if (temp == "") temp = '{"songList":[]}';
+      log(temp.toString());
+      localSong = LocalSong.fromJson(jsonDecode(temp));
+      return localSong.songList;
+    } catch (e) {
+      log(e.toString());
+      log("出了大错了");
+    }
+    return [];
+  }
+
+  /// 获取文件通过id
+  /// mp3 、 lrc 、 png
+  static String getPath(String id, String format) {
+    return "${FileManager.getDir()}/$downloadPath/$id/$id$format";
+  }
+
+  /// 清除下载目录
+  static Future<void> clearDownloadDir() async {
+    await FileManager.clearDir(downloadPath);
+  }
 }
 
 class LocalSong {
@@ -393,6 +492,12 @@ class LocalSong {
         songList.add(Map<String, dynamic>.from(v));
       });
     }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['songList'] = songList.map((v) => v).toList();
+    return data;
   }
 }
 

@@ -63,7 +63,7 @@ Function debounce(Function fn, [int t = 300]) {
     if (timer != null) {
       timer!.cancel();
     }
-    timer = Timer(Duration(milliseconds: delay), fn());
+    timer = Timer(Duration(milliseconds: delay), () => fn());
   };
 }
 

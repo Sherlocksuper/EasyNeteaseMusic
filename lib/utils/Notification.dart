@@ -18,9 +18,6 @@ class NotificationManager {
 
     flutterLocalNotificationsPlugin.initialize(
       initSetting,
-      onDidReceiveBackgroundNotificationResponse: (notification) async {
-        log('onDidReceiveBackgroundNotificationResponse');
-      },
       onDidReceiveNotificationResponse: (notification) async {
         switch (notification.actionId) {
           case '上一首':

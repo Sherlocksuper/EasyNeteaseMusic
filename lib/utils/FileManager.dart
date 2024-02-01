@@ -10,7 +10,7 @@ class FileManager {
 
   static Directory? baseDir;
 
-  static get hasInit => baseDir != null;
+  static bool hasInit = false;
 
   //用来取消下载
   static final CancelToken cancelToken = CancelToken();
@@ -21,23 +21,39 @@ class FileManager {
 
     if (await Permission.storage.request().isGranted) {
       log("已授权");
-    } else {
-      EasyLoading.showToast("未授权,没有下载权限");
+      hasInit = true;
     }
   }
 
-  //读 、写、清空文件
+  /// 是否存在
+  static Future<bool> isExist(String path) async {
+    if (!hasInit) await fmInit();
+    File file = File("${baseDir!.path}/$path");
+    return file.existsSync();
+  }
 
   //向文件中写入信息
   static Future<bool> writeData(String path, String data) async {
     bool result = false;
     if (!hasInit) fmInit();
     File file = File("${baseDir!.path}/$path");
+
+    log(file.path);
+
     if (!file.existsSync()) {
-      file.writeAsString(data);
-      result = true;
+      try {
+        file.writeAsString(data);
+        result = true;
+      } catch (e) {
+        log(e.toString());
+        log("读入错误");
+      }
+    } else {
+      log("歌词文件已存在");
+      return true;
     }
-    return Future.value(result);
+
+    return result;
   }
 
   //读取特定文件数据
@@ -66,13 +82,15 @@ class FileManager {
   //下载文件
 
   //参数：path:文件夹路径，name:文件名，format:文件格式，url:下载地址
-  static Future<bool> downLoad(String path, String name, String format, String url) async {
+
+  static Future<bool> downLoad(String url, String path, String name, String format) async {
     bool result = false;
 
     if (!hasInit) await fmInit();
 
-    String targetPath = "${baseDir!.path}/$path/$name.$format";
+    String targetPath = "${baseDir!.path}/$path/$name$format";
     File file = File(targetPath);
+
     if (!file.existsSync()) {
       await dio.download(
         url,
@@ -88,8 +106,12 @@ class FileManager {
         },
       );
     } else {
-      EasyLoading.showToast("$name已下载,不用重复下载");
+      //打印targetpath
+      log(targetPath);
+      EasyLoading.showToast("$name$format已下载,不用重复下载");
+      return true;
     }
+
     return result;
   }
 
@@ -104,5 +126,53 @@ class FileManager {
       result = true;
     }
     return result;
+  }
+
+  static Future<bool> createDir(String path) async {
+    bool result = false;
+    if (!hasInit) await fmInit();
+
+    Directory dir = Directory("${baseDir!.path}/$path");
+    if (!dir.existsSync()) {
+      await dir.create();
+      result = true;
+    }
+    return result;
+  }
+
+  //创建file
+  static Future<bool> createFile(String path) async {
+    if (!hasInit) await fmInit();
+
+    //创建一个文件
+    File file = File("${baseDir!.path}/$path");
+
+    if (!await file.exists()) {
+      log("歌词文件正在创建");
+      await file.create();
+      log("歌词文件创建成功");
+    } else {
+      log("歌词文件已存在");
+    }
+
+    return true;
+  }
+
+  static getDirList(String s) {
+    if (!hasInit) fmInit();
+    Directory dir = Directory("${baseDir!.path}/$s");
+    return dir.listSync();
+  }
+
+  static clearDir(String s) {
+    if (!hasInit) fmInit();
+    Directory dir = Directory("${baseDir!.path}/$s");
+    dir.deleteSync(recursive: true);
+  }
+
+  //获取dir
+  static String getDir() {
+    if (!hasInit) fmInit();
+    return baseDir!.path;
   }
 }
