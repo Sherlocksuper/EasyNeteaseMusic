@@ -1,9 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/config.dart';
 import 'package:wyyapp/tab_view/view.dart';
+import 'package:wyyapp/utils.dart';
 
 void main() {
   WidgetsBinding instance = WidgetsFlutterBinding.ensureInitialized();
@@ -17,11 +21,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log("message rebuilde");
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TabViewPage(),
+      home: PopScope(
+        canPop: false,
+        onPopInvoked: (value) {
+          log("messagehhhhhhhhh");
+          moveback();
+        },
+        child: TabViewPage(),
+      ),
       builder: EasyLoading.init(),
-      theme: themeData,
       darkTheme: darkThemeData,
     );
   }
@@ -43,8 +54,11 @@ ThemeData themeData = ThemeData(
     elevation: 0,
   ),
   primaryColor: Colors.white,
-  scaffoldBackgroundColor: defaultColor,
   cardColor: Colors.white,
+  cardTheme: const CardTheme(
+    color: Colors.white,
+    elevation: 0,
+  ),
   canvasColor: Colors.white,
   textTheme: const TextTheme(),
   textButtonTheme: TextButtonThemeData(
@@ -52,6 +66,11 @@ ThemeData themeData = ThemeData(
       primary: Colors.black,
     ),
   ),
+  colorScheme: const ColorScheme.light()
+    ..copyWith(
+      primary: Colors.white,
+      secondary: Colors.black,
+    ),
 );
 
 ThemeData darkThemeData = ThemeData.dark().copyWith(
@@ -61,6 +80,10 @@ ThemeData darkThemeData = ThemeData.dark().copyWith(
     elevation: 0,
   ),
   cardColor: Colors.black,
+  cardTheme: const CardTheme(
+    color: Colors.black,
+    elevation: 0,
+  ),
   textTheme: const TextTheme(),
   textSelectionTheme: const TextSelectionThemeData(
     cursorColor: Colors.white,

@@ -1,13 +1,14 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:get/get.dart' hide Response;
+import 'package:get/get.dart' hide Response, debounce;
 import 'package:wyyapp/utils/FileManager.dart';
+import 'package:wyyapp/utils/Notification.dart';
 import '../LoginPrefs.dart';
 import '../config.dart';
+import 'package:wyyapp/utils.dart';
 import '../music_play/logic.dart';
 import '../music_play/view.dart';
 
@@ -43,6 +44,8 @@ class SongManager {
   //五个state，分别是stopped, playing, paused, completed, disposed
   static initSongModule() {
     Get.put(MusicPlayLogic());
+
+    /// 进度改变
     audioPlayer.onPositionChanged.listen((event) {
       log(event.toString());
       nowProgress = event;
@@ -63,10 +66,14 @@ class SongManager {
           }
         }
       }
+
+      debounce(NotificationManager.displayNotification)();
     });
 
+    ///总时长改变
     audioPlayer.onDurationChanged.listen((Duration d) {});
 
+    ///播放完成
     audioPlayer.onPlayerComplete.listen((event) {
       //根据三种状态选择不同的模式
       if (playMode == PlayMode.loop) {
@@ -78,6 +85,7 @@ class SongManager {
       }
     });
 
+    /// 播放状态改变
     //当播放状态改变的时候
     audioPlayer.onPlayerStateChanged.listen((event) {
       if (event == PlayerState.playing) {
@@ -97,14 +105,15 @@ class SongManager {
     hasInit = true;
   }
 
-  //**************基础播放操作***************** */
+  ///**************基础播放操作***************** */
+  ///包括 播放、暂停、继续、从头播放、下一首、上一首、随机播放
+  /// 以及添加歌曲到下一首播放、添加歌曲到最后播放  、跳到播放进度
 
   //播放
   static Future<void> playMusic(Map musicItem) async {
     if (!hasInit) initSongModule();
 
-    if (musicItemInfo["id"] == musicItem["id"]) {
-      //如果等于的话，就直接打开播放页
+    if (musicItemInfo["id"] == musicItem["id"] && (Get.isBottomSheetOpen == false || Get.isBottomSheetOpen == null)) {
       Get.bottomSheet(
         SizedBox(
           height: Get.height,
@@ -123,7 +132,7 @@ class SongManager {
 
     musicItemInfo = musicItem;
 
-    if (Get.isBottomSheetOpen == false) {
+    if (Get.isBottomSheetOpen == false || Get.isBottomSheetOpen == null) {
       Get.bottomSheet(
         SizedBox(
           height: Get.height,
@@ -228,6 +237,14 @@ class SongManager {
     songListToPlay.add(musicItem);
   }
 
+  static void seekMusicInProgress(double d) {
+    audioPlayer.seek(Duration(milliseconds: (d * totalLength.inMilliseconds).toInt()));
+  }
+
+  static void seekMusic(Duration d) {
+    audioPlayer.seek(d);
+  }
+
   //**************操作数据***************** */
 
   //清空 进度 、播放状态 、转圈
@@ -292,7 +309,7 @@ class SongManager {
     return result;
   }
 
-  //**************操作列表***************** */
+  ///**************操作列表***************** */
 
   //添加歌曲到预备播放列表
   static void addSongToPreparePlayList(Map musicItem) {
@@ -321,7 +338,7 @@ class SongManager {
     Get.find<MusicPlayLogic>().update();
   }
 
-  //************歌曲的下载操作和属性************** */
+  ///************歌曲的下载操作和属性************** */
 
   //首先要挑选一个文件，存储音乐的item信息下载到的路径
   //然后要挑选一个文件，存储音乐的url资源信息
@@ -363,9 +380,7 @@ class SongManager {
     return await FileManager.deleteFile(path);
   }
 
-  static void seekMusic(double d) {
-    audioPlayer.seek(Duration(milliseconds: (d * totalLength.inMilliseconds).toInt()));
-  }
+  /// app通知操作
 }
 
 class LocalSong {

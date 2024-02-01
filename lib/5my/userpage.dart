@@ -7,6 +7,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/5my/state.dart';
 import 'package:wyyapp/LoginPrefs.dart';
+import 'package:wyyapp/utils/Notification.dart';
 import '../config.dart';
 import 'logic.dart';
 
@@ -34,8 +35,9 @@ class UsePage extends StatelessWidget {
                   stretchTriggerOffset: 50,
                   backgroundColor: Colors.transparent,
                   leading: GestureDetector(
-                    onTap: () {
-                      Scaffold.of(drawerContext).openDrawer();
+                    onTap: () async {
+                      // Scaffold.of(drawerContext).openDrawer();
+                      await NotificationManager.displayNotification();
                     },
                     child: const Icon(
                       Icons.menu,

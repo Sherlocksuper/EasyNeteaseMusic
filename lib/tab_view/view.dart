@@ -1,7 +1,9 @@
 import 'dart:developer';
-
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/1commend/view.dart';
 import 'package:wyyapp/5my/userpage.dart';
@@ -9,8 +11,9 @@ import 'package:wyyapp/KeepAliveWrapper.dart';
 import 'package:wyyapp/LoginPrefs.dart';
 import 'package:wyyapp/config.dart';
 import 'package:wyyapp/login/view.dart';
+import 'package:wyyapp/music_play/logic.dart';
 import 'package:wyyapp/tab_view/drawer/view.dart';
-import '../2find/view.dart';
+import 'package:wyyapp/utils/Song.dart';
 import 'logic.dart';
 
 class TabViewPage extends StatelessWidget {
@@ -24,6 +27,7 @@ class TabViewPage extends StatelessWidget {
     return FutureBuilder(
       future: Future(
         () async => {
+          SongManager.initSongModule(),
           await LoginPrefs.init(),
           if (LoginPrefs.getCookie() == "null")
             {
@@ -49,17 +53,27 @@ class TabViewPage extends StatelessWidget {
   }
 }
 
-class TabViewContent extends StatelessWidget {
+class TabViewContent extends StatefulWidget {
   TabViewContent({super.key});
 
+  @override
+  State<TabViewContent> createState() => _TabViewContentState();
+}
+
+class _TabViewContentState extends State<TabViewContent> with TickerProviderStateMixin {
   //find
   final logic = Get.find<TabViewLogic>();
+
   final state = Get.find<TabViewLogic>().state;
 
   int currentIndex = 0;
 
+  PlayerState playerState = PlayerState.stopped;
+
   @override
   Widget build(BuildContext context) {
+    playerState = SongManager.playerState;
+
     return Scaffold(
       drawer: TotalDrawer(),
       body: PageView(
@@ -116,6 +130,62 @@ class TabViewContent extends StatelessWidget {
               ),
             ],
             selectedItemColor: Colors.red,
+          );
+        },
+      ),
+      bottomSheet: GetBuilder<MusicPlayLogic>(
+        builder: (logic) {
+          if (SongManager.musicItemInfo.isEmpty) {
+            return const SizedBox();
+          }
+          return GestureDetector(
+            onTap: () {
+              SongManager.playMusic(SongManager.musicItemInfo);
+            },
+            child: Container(
+              height: 80,
+              color: Colors.white,
+              padding: const EdgeInsets.all(15),
+              child: Row(
+                children: [
+                  RotationTransition(
+                    turns: Tween(begin: 0.0, end: 1.0).animate(
+                      AnimationController(
+                        vsync: this,
+                        duration: const Duration(seconds: 10),
+                      )..repeat(),
+                    ),
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: SongManager.musicItemInfo["picUrl"] ?? "",
+                      ),
+                    ),
+                  ),
+                  const Gap(10),
+                  Column(
+                    children: [
+                      Text(SongManager.musicItemInfo["name"],
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(SongManager.musicItemInfo["song"]?["artists"]?[0]?["name"] ?? ""),
+                    ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      if (SongManager.playerState == PlayerState.playing) {
+                        SongManager.pauseMusic();
+                      } else {
+                        SongManager.continueMusic();
+                      }
+                    },
+                    //根据播放状态
+                    icon: Icon(
+                      SongManager.playerState == PlayerState.playing ? Icons.pause : Icons.play_arrow,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),

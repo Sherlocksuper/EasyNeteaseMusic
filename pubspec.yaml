@@ -55,6 +55,7 @@ dependencies:
   flutter_native_splash: ^2.3.9
   just_audio: ^0.9.36
   webview_flutter: ^4.4.4
+  flutter_local_notifications: ^16.3.2
 
 dev_dependencies:
   flutter_test:

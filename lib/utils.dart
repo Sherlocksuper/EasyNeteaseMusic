@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -40,7 +42,39 @@ Future<bool> downLoadImage(String url) async {
   }
 }
 
-void open() {
-  EasyLoading.showToast("此功能暂未开放");
+Future<void> open() async {
+  var methodChannel = MethodChannel("test");
+  var test = await methodChannel.invokeMethod("moveback");
+  log(test.toString());
+  // EasyLoading.showToast("此功能暂未开放");
 }
 
+Future<void> moveback() async {
+  var methodChannel = const MethodChannel("test");
+  var test = await methodChannel.invokeMethod("moveTaskToBack");
+  log(test.toString());
+}
+
+//防抖
+Function debounce(Function fn, [int t = 300]) {
+  var delay = t;
+  Timer? timer;
+  return () {
+    if (timer != null) {
+      timer!.cancel();
+    }
+    timer = Timer(Duration(milliseconds: delay), fn());
+  };
+}
+
+//节流
+Function throttle(Function fn, [int t = 300]) {
+  var lastTime = DateTime.now().millisecondsSinceEpoch;
+  return () {
+    var nowTime = DateTime.now().millisecondsSinceEpoch;
+    if (nowTime - lastTime > t) {
+      fn();
+      lastTime = nowTime;
+    }
+  };
+}

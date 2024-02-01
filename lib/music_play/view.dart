@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:wyyapp/utils/Song.dart';
@@ -163,7 +164,7 @@ class _SongPlayState extends State<SongPlay> {
             return ProgressBar(
               onSeek: (duration) async {},
               onDragUpdate: (details) async {
-                SongManager.seekMusic(details.globalPosition.dx / Get.width);
+                SongManager.seekMusic(details.timeStamp);
               },
               progress: SongManager.nowProgress,
               total: SongManager.totalLength,
@@ -323,24 +324,39 @@ class SongDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListWheelScrollView(
-      itemExtent: 100,
-      diameterRatio: 2.5,
-      controller: SongManager.lyricController,
-      children: SongManager.songLyric.map((e) {
-        return Center(
-          child: Text(
-            e["lyric"].toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              //字体
-              fontFamily: "XingShu",
+    return GestureDetector(
+      //当手指放到屏幕上的时候
+      onTapDown: (details) {},
+      child: Stack(
+        children: [
+          ListWheelScrollView(
+            itemExtent: 100,
+            diameterRatio: 2.5,
+            controller: SongManager.lyricController,
+            children: SongManager.songLyric.map((e) {
+              return Center(
+                child: Text(
+                  e["lyric"].toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    //字体
+                    fontFamily: "XingShu",
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          Center(
+            child: Container(
+              height: 1,
+              width: Get.width * 0.8,
+              color: Colors.red,
             ),
           ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 }
