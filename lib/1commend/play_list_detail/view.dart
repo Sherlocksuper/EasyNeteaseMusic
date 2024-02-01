@@ -246,7 +246,7 @@ class PlayHeader extends StatelessWidget {
                         ClipOval(
                           child: Get.find<PlayListDetailLogic>().state.creator["avatarUrl"] == null
                               ? Image.asset(
-                                  'images/img.png',
+                                  'images/analyze.png',
                                   fit: BoxFit.cover,
                                   width: 20,
                                   height: 20,

@@ -89,7 +89,7 @@ Widget _cell() {
       children: [
         ClipOval(
           child: Image.asset(
-            'images/img.png',
+            'images/analyze.png',
             width: headerHeight,
             height: headerHeight,
             fit: BoxFit.cover,

@@ -109,7 +109,6 @@ class DownloadPage extends StatelessWidget {
                   icon: const Icon(Icons.delete),
                 ),
                 onTap: () async {
-                  // Get.defaultDialog(title: state.downloadedSong.toString());
                   log(SongManager.musicItemInfo.toString());
                 },
               );
