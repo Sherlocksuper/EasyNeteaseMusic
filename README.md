@@ -24,7 +24,7 @@ A new Flutter project.
 ![img.png](source/in.jpg)
 
 下载功能
-![img_2.png](img_2.png)
+![img_2.png](source/img_2.png)
 
 通过android 的notification实现下载进度的展示 以及播放的控制
 ![img.png](source/notifi.jpg)
@@ -37,8 +37,8 @@ A new Flutter project.
 ![dark mode](source/dark.jpg)
 
 歌单广场
-![img_1.png](img_1.png)
-![img_3.png](img_3.png)
+![img_1.png](source/img_1.png)
+![img_3.png](source/img_3.png)
 
 批量管理
 [playlist](source/addtoplaylist.mp4)
