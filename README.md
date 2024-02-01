@@ -24,19 +24,19 @@ A new Flutter project.
 
 下载功能
 
-[下载功能展示](source/download.mp4)
+![下载功能展示](source/download.mp4)
 
 通过android 的notification实现下载进度的展示 以及播放的控制
-[notification.mp4](source/notificationAmusiclist.mp4)
+![notification.mp4](source/notificationAmusiclist.mp4)
 
 深色模式
-[dark](source/darkmode.mp4)
+![dark](source/darkmode.mp4)
 
 歌单广场
-[play](source/playsq.mp4)
+![play](source/playsq.mp4)
 
 批量管理
-[playlist](source/addtoplaylist.mp4)
+![playlist](source/addtoplaylist.mp4)
 
 以下是对于网易云音乐接口的分析的一角，总的来说
 对我启发的最重要的点是
@@ -47,8 +47,8 @@ A new Flutter project.
 才发现，这样的组织结构，对于前端来说,是非常不友好的
 至少对一个未从头参与开发的初级学习者来说是这样的
 
-[img.png](source/img.png)
+![img.png](source/img.png)
 
-[img.png](source/img23.png)
+![img.png](source/img23.png)
 
-[我的博客](https://www.holdme.fun/)
+![我的博客](https://www.holdme.fun/)
