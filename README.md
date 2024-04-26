@@ -2,6 +2,8 @@
 
 A new Flutter project.
 
+具体演示等可看个人博客： https://holdme.fun/2024/02/01/3wyyapp/
+
 ## Getting Started
 
 一个简陋版的仿网易云音乐app，供学习使用
